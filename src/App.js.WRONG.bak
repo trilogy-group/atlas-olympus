@@ -1,0 +1,487 @@
+import React, { useEffect, useState } from 'react';
+import { GoogleOAuthProvider } from '@react-oauth/google';
+import { ColorModeContext, useMode } from "./theme";
+import { CssBaseline, ThemeProvider, Box } from "@mui/material";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import Topbar from "./scenes/global/Topbar";
+import Sidebar from "./scenes/global/Sidebar";
+import Login from "./scenes/login";
+import DashboardPassive from "./scenes/dashboardpassive";
+import DashboardHistory from "./scenes/dashboardhistory";
+import DashboardAutomations from "./scenes/dashboardautomations";
+import DataMatrix from "./scenes/datamatrix";
+import CreateUserForm from "./scenes/createuser";
+import AssignProducts from "./scenes/assignproducts";
+import UserProducts from "./scenes/userproducts";
+import EscalationsReport from "./scenes/escalationsreport";
+import CustomReport from "./scenes/customreport";
+import CSVDownloads from "./scenes/csvdownloads";
+import CallsStatistics from "./scenes/callsstatistics";
+import { PeriodProvider } from "./context/PeriodContext";
+import { performGetTotalsAll, performGetHistory, performGetAutomations, fetchAssignments, fetchUsers } from "./data/fetchData";
+import { ReloadProvider } from "./context/ReloadContext";
+import { useIsMobile } from "./hooks/useIsMobile";
+import process from 'process';
+
+window.process = process;
+await fetchUsers();
+
+const CLIENT_ID = "683916915036-9j70gp68v7asifbll12bh5dt690cbc52.apps.googleusercontent.com";
+const SHEET_IDS = [
+  "1j1SCJrBrYb8Dx5l6QkMB9SX7WMkV_ZzSZOCxs3Tm6Os",
+  "1zUZJJsqkKfs9Fu4gx5tOW9m216Kft5ucdoutcY02LEM",
+  "1I5cdCL3k_h25DGzySpkQQuqsn0Rbuv-KafEEtVCgj3E",
+];
+
+const GLOBAL_SETTINGS = {
+  SHEET_KEY: 'AIzaSyCO8yb8FFHwAbaJR6YmfQXKgZxkGEQjk5A',
+  SHEET_API_URL: `sheets.googleapis.com/v4/spreadsheets`,
+  SHEET_RANGE: `A1:Z`,
+};
+
+function clearLocalStorageOnRefresh() {
+  window.addEventListener('beforeunload', () => {
+    // Lista de claves que NO se deben borrar en refresh
+    const keysToKeep = [
+      'user_info',
+      'token_for_backend',
+      'session_timestamp',
+      'fresh_login',
+      'bu-product',
+      'bu-product-history',
+      'bu-product-automations',
+      'history-data',
+      'automations-history-data',
+      'all-users',
+      'assignments',
+      'product-list',
+      'current-vp',
+      'current-timeframe',
+      'last-update-4w',
+      'last-update-1w',
+      'last-update-1d'
+    ];
+
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      
+      // Don't delete specific keys or keys starting with certain prefixes
+      const shouldKeep = keysToKeep.includes(key) || 
+                        key.startsWith('performGetTotalsAll-') ||
+                        key.startsWith('performGetProductsRaw-') ||
+                        key.startsWith('ai-models');
+      
+      if (!shouldKeep) {
+        localStorage.removeItem(key);
+        i--;
+      }
+    }
+  });
+}
+
+const fetchData = async () => {
+  const promises = SHEET_IDS.map(sheet => {
+    const settings = { ...GLOBAL_SETTINGS, SHEET_ID: sheet };
+    return performGetTotalsAll(settings);
+  });
+  await Promise.all(promises);
+};
+
+const fetchHistoryData = async () => {
+  const promises = SHEET_IDS.map(sheet => {
+    const settings = { ...GLOBAL_SETTINGS, SHEET_ID: sheet };
+    return performGetHistory(settings);
+  });
+  await Promise.all(promises);
+};
+
+const fetchAutomationsData = async () => {
+  const promises = SHEET_IDS.map(sheet => {
+    const settings = { ...GLOBAL_SETTINGS, SHEET_ID: sheet };
+    return performGetAutomations(settings);
+  });
+  await Promise.all(promises);
+};
+
+const pollForData = (setRoutesConfig) => {
+  let buProductData;
+  do {
+    buProductData = JSON.parse(localStorage.getItem('bu-product'));
+  } while (!buProductData);
+
+  const currentVp = localStorage.getItem("current-vp")?.toLowerCase().replace(/\s+/g, '') || 'all';
+
+  if (buProductData) {
+    const buProductRoutes = buProductData.flatMap(row => {
+      const bu = row[0];
+      const product = row[1];
+      const basePath = currentVp === 'all'
+        ? `/dashboard/${bu.toLowerCase().replace(/\s+/g, '')}`
+        : `/dashboard/${currentVp}/${bu.toLowerCase().replace(/\s+/g, '')}`;
+      const productPath = `${basePath}/${product.toLowerCase().replace(/\s+/g, '_')}`;
+      const buRoute = { path: basePath, element: <DashboardPassive bu_subset={bu} vpName={currentVp === 'all' ? undefined : currentVp} /> };
+      const productRoute = { path: productPath, element: <DataMatrix product={product} /> };
+      return [buRoute, productRoute];
+    });
+    setRoutesConfig(buProductRoutes);
+  } else {
+    setTimeout(pollForData, 100);
+  }
+};
+
+const pollForHistoryData = (setRoutesHistoryConfig) => {
+  let buProductHistoryData;
+  do {
+    buProductHistoryData = JSON.parse(localStorage.getItem('bu-product-history'));
+  } while (!buProductHistoryData);
+
+  const currentVp = localStorage.getItem("current-vp")?.toLowerCase().replace(/\s+/g, '') || 'all';
+
+  if (buProductHistoryData) {
+    const buProductRoutes = buProductHistoryData.flatMap(row => {
+      const bu = row[0];
+      const product = row[1];
+      const basePath = currentVp === 'all'
+        ? `/history/${bu.toLowerCase().replace(/\s+/g, '')}`
+        : `/history/${currentVp}/${bu.toLowerCase().replace(/\s+/g, '')}`;
+      const productPath = `${basePath}/${product.toLowerCase().replace(/\s+/g, '_')}`;
+      const buRoute = { path: basePath, element: <DashboardHistory bu_subset={bu} vpName={currentVp === 'all' ? undefined : currentVp} /> };
+      const productRoute = { path: productPath, element: <DashboardHistory bu_subset={bu} vpName={currentVp === 'all' ? undefined : currentVp} productChosen={product} /> };
+      return [buRoute, productRoute];
+    });
+    setRoutesHistoryConfig(buProductRoutes);
+  } else {
+    setTimeout(pollForHistoryData, 100);
+  }
+};
+
+const pollForAutomationsData = (setRoutesAutomationsConfig) => {
+  let buProductAutomationsData;
+  do {
+    buProductAutomationsData = JSON.parse(localStorage.getItem('bu-product-automations'));
+  } while (!buProductAutomationsData);
+
+  const currentVp = localStorage.getItem("current-vp")?.toLowerCase().replace(/\s+/g, '') || 'all';
+
+  if (buProductAutomationsData) {
+    // console.log("buProductAutomationsData", buProductAutomationsData);
+    const buProductRoutes = buProductAutomationsData.flatMap(row => {
+      const bu = row[0];
+      const product = row[1];
+      console.log("Current VP here is:", currentVp);
+      const basePath = currentVp === 'all'
+        ? `/automations/${bu.toLowerCase().replace(/\s+/g, '')}`
+        : `/automations/${currentVp}/${bu.toLowerCase().replace(/\s+/g, '')}`;
+      const productPath = `${basePath}/${product.toLowerCase().replace(/\s+/g, '_')}`;
+      const buRoute = { path: basePath, element: <DashboardAutomations bu_subset={bu} vpName={currentVp === 'all' ? undefined : currentVp} /> };
+      const productRoute = { path: productPath, element: <DashboardAutomations bu_subset={bu} vpName={currentVp === 'all' ? undefined : currentVp} productChosen={product} /> };
+      return [buRoute, productRoute];
+    });
+    setRoutesAutomationsConfig(buProductRoutes); 
+    // console.log("Generated Automations Routes:", buProductRoutes);
+  } else {
+    setTimeout(() => pollForAutomationsData(setRoutesAutomationsConfig), 100);
+  }
+};
+
+/*- MAIN FUNCTION THAT LOADS THE WHOLE THING -*/
+
+const fetchAndSetRoutes = async (setRoutesConfig, setRoutesHistoryConfig, setRoutesAutomationsConfig) => {
+  await fetchData();
+  await fetchHistoryData();
+  await fetchAutomationsData();
+  pollForData(setRoutesConfig);
+  pollForHistoryData(setRoutesHistoryConfig);
+  pollForAutomationsData(setRoutesAutomationsConfig);
+};
+
+/*- MAIN FUNCTION THAT LOADS THE WHOLE THING -*/
+
+async function fetchVPRoutes(setVpRoutesConfig) {
+  const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+  let allUsers = [];
+  do {
+    allUsers = JSON.parse(localStorage.getItem("all-users"));
+    if (!allUsers || allUsers.length === 0) {
+      await delay(500);
+    }
+  } while (!allUsers || allUsers.length === 0);
+  const vps = allUsers.filter(user => user[5].includes("Vice President"));
+  const vpRoutes = [];
+  for (const vp of vps) {
+    const vpPath = `/dashboard/${(vp[0] + vp[1]).toLowerCase().replace(/\s+/g, '')}`;
+    let buProductData;
+    do {
+      buProductData = JSON.parse(localStorage.getItem('bu-product')) || [];
+      if (buProductData.length === 0) {
+        await delay(500);
+      }
+    } while (buProductData.length === 0);
+    vpRoutes.push({ path: vpPath, element: <DashboardPassive vpName={`${vp[0]} ${vp[1]}`} /> });
+    buProductData.forEach(row => {
+      const bu = row[0];
+      const product = row[1];
+      const buPath = `${vpPath}/${bu.toLowerCase().replace(/\s+/g, '')}`;
+      const productPath = `${buPath}/${product.toLowerCase().replace(/\s+/g, '_')}`;
+      vpRoutes.push({ path: buPath, element: <DashboardPassive bu_subset={bu} vpName={`${vp[0]} ${vp[1]}`} /> });
+      vpRoutes.push({ path: productPath, element: <DataMatrix product={product} /> });
+    });
+  }
+  setVpRoutesConfig(vpRoutes);
+}
+
+async function fetchVPHistoryRoutes(setVpHistoryRoutesConfig) {
+  const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+  let allUsers = [];
+  do {
+    allUsers = JSON.parse(localStorage.getItem("all-users"));
+    if (!allUsers || allUsers.length === 0) {
+      await delay(500);
+    }
+  } while (!allUsers || allUsers.length === 0);
+  const vps = allUsers.filter(user => user[5].includes("Vice President"));
+  const vpHistoryRoutes = [];
+  for (const vp of vps) {
+    const vpPath = `/history/${(vp[0] + vp[1]).toLowerCase().replace(/\s+/g, '')}`;
+    let buProductData;
+    do {
+      buProductData = JSON.parse(localStorage.getItem('bu-product-history')) || [];
+      if (buProductData.length === 0) {
+        await delay(500);
+      }
+    } while (buProductData.length === 0);
+    vpHistoryRoutes.push({ path: vpPath, element: <DashboardHistory vpName={`${vp[0]} ${vp[1]}`} /> });
+    buProductData.forEach(row => {
+      const bu = row[0];
+      const product = row[1];
+      const buPath = `${vpPath}/${bu.toLowerCase().replace(/\s+/g, '')}`;
+      const productPath = `${buPath}/${product.toLowerCase().replace(/\s+/g, '_')}`;
+      vpHistoryRoutes.push({ path: buPath, element: <DashboardHistory bu_subset={bu} vpName={`${vp[0]} ${vp[1]}`} /> });
+      vpHistoryRoutes.push({ path: productPath, element: <DashboardHistory bu_subset={bu} vpName={`${vp[0]} ${vp[1]}`} productChosen={product} /> });
+    });
+  }
+  setVpHistoryRoutesConfig(vpHistoryRoutes);
+}
+
+async function fetchVPAutomationsRoutes(setVpAutomationsRoutesConfig) {
+  const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+  let allUsers = [];
+  do {
+    allUsers = JSON.parse(localStorage.getItem("all-users"));
+    if (!allUsers || allUsers.length === 0) {
+      await delay(500);
+    }
+  } while (!allUsers || allUsers.length === 0);
+
+  const vps = allUsers.filter(user => user[5]?.includes("Vice President"));
+  const vpAutomationsRoutes = [];
+
+  for (const vp of vps) {
+    const vpName = (vp[0] + vp[1]).toLowerCase().replace(/\s+/g, '');
+    const vpPath = `/automations/${vpName}`;
+    let buProductData;
+    do {
+      buProductData = JSON.parse(localStorage.getItem('bu-product-automations')) || [];
+      if (buProductData.length === 0) {
+        await delay(500);
+      }
+    } while (buProductData.length === 0);
+
+    vpAutomationsRoutes.push({ path: vpPath, element: <DashboardAutomations vpName={`${vp[0]} ${vp[1]}`} /> });
+
+    buProductData.forEach(row => {
+      const bu = row[0];
+      const product = row[1];
+      const buPath = `${vpPath}/${bu.toLowerCase().replace(/\s+/g, '')}`;
+      const productPath = `${buPath}/${product.toLowerCase().replace(/\s+/g, '_')}`;
+      vpAutomationsRoutes.push({ path: buPath, element: <DashboardAutomations bu_subset={bu} vpName={`${vp[0]} ${vp[1]}`} /> });
+      vpAutomationsRoutes.push({ path: productPath, element: <DashboardAutomations bu_subset={bu} vpName={`${vp[0]} ${vp[1]}`} productChosen={product} /> });
+    });
+  }
+
+  setVpAutomationsRoutesConfig(vpAutomationsRoutes);
+  // console.log("Generated VP Automations Routes:", vpAutomationsRoutes.map(r => r.path));
+}
+
+async function fetchDataAssignments() {
+  try {
+    const globals = {
+      "SHEET_KEY": GLOBAL_SETTINGS.SHEET_KEY,
+      "SHEET_API_URL": GLOBAL_SETTINGS.SHEET_API_URL,
+    };
+    await fetchAssignments(globals);
+  } catch (error) {
+    console.error("Error fetching assignments:", error);
+  }
+}
+
+function App() {
+  const [theme, colorMode] = useMode();
+  const isMobile = useIsMobile(); // Detect mobile viewport
+  const [routesConfig, setRoutesConfig] = useState([]);
+  const [routesHistoryConfig, setRoutesHistoryConfig] = useState([]);
+  const [routesAutomationsConfig, setRoutesAutomationsConfig] = useState([]);
+  const [vpRoutesConfig, setVpRoutesConfig] = useState([]);
+  const [vpHistoryRoutesConfig, setVpHistoryRoutesConfig] = useState([]);
+  const [vpAutomationsRoutesConfig, setVpAutomationsRoutesConfig] = useState([]);
+  const [currentVp, setCurrentVp] = useState(localStorage.getItem("current-vp") || "All");
+
+  const location = useLocation();
+  const isLoginRoute = location.pathname === '/login';
+  const isAuthenticated = !!localStorage.getItem("user_info");
+
+  useEffect(() => {
+    const initializeApp = async () => {
+      // Check if it's a fresh login or if there's cached data
+      const isFreshLogin = localStorage.getItem('fresh_login') === 'true';
+      const hasCachedData = localStorage.getItem('bu-product') !== null;
+      const isAuthenticated = localStorage.getItem('user_info') !== null;
+      
+      // Check cache age (30 minutes = 1800000 ms)
+      const CACHE_EXPIRATION_TIME = 30 * 60 * 1000; // 30 minutes in milliseconds
+      const sessionTimestamp = localStorage.getItem('session_timestamp');
+      const currentTime = Date.now();
+      
+      let isCacheValid = false;
+      if (sessionTimestamp) {
+        const cacheAge = currentTime - parseInt(sessionTimestamp);
+        isCacheValid = cacheAge < CACHE_EXPIRATION_TIME;
+        console.log(`📅 Cache age: ${Math.floor(cacheAge / 60000)} minutes (${isCacheValid ? 'valid' : 'expired'})`);
+      }
+
+      // Set default values if they don't exist
+      if (!localStorage.getItem('current-vp')) {
+        localStorage.setItem('current-vp', 'All');
+      }
+      if (!localStorage.getItem('current-timeframe')) {
+        localStorage.setItem('current-timeframe', '4 Weeks');
+      }
+
+      // Loading decision:
+      // 1. Fresh login (first time) → LOAD from S3
+      // 2. NO cached data → LOAD from S3
+      // 3. Expired cache (>30 min) → LOAD from S3
+      // 4. Valid cache (<30 min) → USE CACHE
+      const shouldLoadFromS3 = isFreshLogin || !hasCachedData || (hasCachedData && !isCacheValid);
+
+      if (shouldLoadFromS3) {
+        if (!hasCachedData) {
+          console.log('🔄 No cache found - Loading data from S3...');
+        } else if (!isCacheValid) {
+          console.log('🔄 Cache expired (>30 min) - Reloading from S3...');
+        } else {
+          console.log('🔄 First login - Loading data from S3...');
+        }
+        
+        await fetchAndSetRoutes(setRoutesConfig, setRoutesHistoryConfig, setRoutesAutomationsConfig);
+        await fetchVPRoutes(setVpRoutesConfig);
+        await fetchVPHistoryRoutes(setVpHistoryRoutesConfig);
+        await fetchVPAutomationsRoutes(setVpAutomationsRoutesConfig);
+        await fetchDataAssignments();
+        
+        // Update cache timestamp after loading
+        localStorage.setItem('session_timestamp', Date.now().toString());
+        
+        // Clean fresh login flag after loading
+        if (isFreshLogin) {
+          localStorage.removeItem('fresh_login');
+          console.log('✅ Data loaded - First session completed');
+        } else {
+          console.log('✅ Data reloaded from S3');
+        }
+      } else {
+        console.log('⚡ Using valid cache (<30 min) - Not reloading from S3');
+        // Only configure routes with existing data
+        pollForData(setRoutesConfig);
+        pollForHistoryData(setRoutesHistoryConfig);
+        pollForAutomationsData(setRoutesAutomationsConfig);
+        await fetchVPRoutes(setVpRoutesConfig);
+        await fetchVPHistoryRoutes(setVpHistoryRoutesConfig);
+        await fetchVPAutomationsRoutes(setVpAutomationsRoutesConfig);
+      }
+
+      clearLocalStorageOnRefresh();
+
+      const handleStorageChange = (e) => {
+        if (e.key === "current-vp") {
+          setCurrentVp(e.newValue || "All");
+          fetchAndSetRoutes(setRoutesConfig, setRoutesHistoryConfig, setRoutesAutomationsConfig);
+        }
+      };
+      window.addEventListener("storage", handleStorageChange);
+
+      return () => window.removeEventListener("storage", handleStorageChange);
+    };
+
+    initializeApp();
+  }, []);
+
+  let allTheRoutes = [...routesConfig, ...routesHistoryConfig, ...routesAutomationsConfig, ...vpRoutesConfig, ...vpHistoryRoutesConfig, ...vpAutomationsRoutesConfig];
+
+  return (
+    <GoogleOAuthProvider clientId={CLIENT_ID}>
+      <ColorModeContext.Provider value={colorMode}>
+        <ThemeProvider theme={theme}>
+          <ReloadProvider>
+            <PeriodProvider>
+              <CssBaseline />
+              <div className="app">
+                {!isLoginRoute && (
+                  <Box
+                    sx={{
+                      backgroundImage: theme.palette.background.backgroundImage,
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                      backgroundRepeat: "no-repeat",
+                      position: "fixed",
+                      top: 0,
+                      left: 0,
+                      width: "100vw",
+                      height: "100vh",
+                      zIndex: -1,
+                    }}
+                  />
+                )}
+                <Box display="flex" sx={{ minHeight: "100vh", width: "100%" }}>
+                  {isAuthenticated && !isLoginRoute && <Sidebar />}
+                  <Box 
+                    flexGrow={1} 
+                    display="flex" 
+                    flexDirection="column" 
+                    sx={{ 
+                      width: "100%",
+                      paddingTop: isMobile ? "60px" : "0px", // Add top padding in mobile for hamburger button
+                    }}
+                  >
+                    {isAuthenticated && !isLoginRoute && <Topbar />}
+                    <Routes>
+                      {allTheRoutes.map((route, index) => (
+                        <Route key={index} path={route.path.replace('engineering/saas', 'engineering-saas')} element={route.element} />
+                      ))}
+                      <Route path="/" element={<Navigate to="/login" />} />
+                      <Route path="/login" element={<Login />} />
+                      <Route path="/history" element={<DashboardHistory />} />
+                      <Route path="/automations" element={<DashboardAutomations />} />
+                      <Route path="/dashboard/passive" element={<DashboardPassive />} />
+                      <Route path="/dashboard/centralfinance/centralfinance" element={<DataMatrix product="cs_central_finance" />} />
+                      <Route path="/createuser" element={<CreateUserForm />} />
+                      <Route path="/assignproducts" element={<AssignProducts />} />
+                      <Route path="/userproducts" element={<UserProducts />} />
+                      <Route path="/escalationsreport" element={<EscalationsReport />} />
+                      <Route path="/customreport" element={<CustomReport />} />
+                      <Route path="/csvdownloads" element={<CSVDownloads />} />
+                      <Route path="/callsstatistics" element={<CallsStatistics />} />
+                    </Routes>
+                  </Box>
+                </Box>
+              </div>
+            </PeriodProvider>
+          </ReloadProvider>
+        </ThemeProvider>
+      </ColorModeContext.Provider>
+    </GoogleOAuthProvider>
+  );
+}
+
+export default App;

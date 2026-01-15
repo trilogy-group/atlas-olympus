@@ -1,70 +1,232 @@
-# Getting Started with Create React App
+# 🏛️ ATLAS Olympus
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+<div align="center">
 
-## Available Scripts
+![Version](https://img.shields.io/badge/version-1.15012026A-blue)
+![React](https://img.shields.io/badge/React-18.x-61DAFB?logo=react)
+![MUI](https://img.shields.io/badge/MUI-5.x-007FFF?logo=mui)
+![License](https://img.shields.io/badge/license-Proprietary-red)
 
-In the project directory, you can run:
+**Central Support Analytics Dashboard**
 
-### `npm start`
+*Real-time metrics, historical trends, and team performance insights*
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+</div>
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+---
 
-### `npm test`
+## 📊 Overview
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+ATLAS Olympus is a comprehensive analytics dashboard for Central Support operations. It provides real-time visibility into ticket metrics, AI resolution rates, SLA compliance, and team performance across all Business Units (BUs) and products.
 
-### `npm run build`
+### ✨ Key Features
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+| Feature | Description |
+|---------|-------------|
+| 📈 **Real-time Stats** | Live dashboard with current ticket volumes and metrics |
+| 📉 **Historical Trends** | 12-week trend analysis for all KPIs |
+| 🤖 **AI Resolution Tracking** | Monitor AI-assisted ticket resolution rates |
+| ⏱️ **SLA Compliance** | Track SLA adherence across products |
+| 🔄 **FCR Analysis** | First Contact Resolution metrics |
+| 👥 **VP/Team Views** | Filter by VP assignments and teams |
+| 🎯 **Product Drill-down** | Granular views by BU and product |
+| 👁️ **Visibility Toggles** | Exclude/include products from charts dynamically |
+| 📱 **Mobile Responsive** | Full mobile support with optimized layouts |
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+---
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## 🖥️ Screenshots
 
-### `npm run eject`
+### Dashboard View
+```
+┌─────────────────────────────────────────────────────────────┐
+│  ATLAS Olympus                              v.1.15012026A   │
+├──────────┬──────────────────────────────────────────────────┤
+│          │  📊 Tickets Closed    │  🤖 AI Resolution        │
+│  BU List │  [Area Chart]         │  [Area Chart]            │
+│          ├──────────────────────────────────────────────────┤
+│  👁️ Toggle│  🔄 FCR              │  ⏱️ SLA Compliance        │
+│          │  [Area Chart]         │  [Area Chart]            │
+└──────────┴──────────────────────────────────────────────────┘
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+---
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## 🚀 Getting Started
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+### Prerequisites
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+- **Node.js** >= 16.x
+- **npm** >= 8.x
+- Google OAuth credentials (for authentication)
 
-## Learn More
+### Installation
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+```bash
+# Clone the repository
+git clone https://github.com/trilogy-group/atlas-olympus.git
+cd atlas-olympus
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+# Install dependencies
+npm install
 
-### Code Splitting
+# Start development server
+npm start
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+The app will open at [http://localhost:3000](http://localhost:3000)
 
-### Analyzing the Bundle Size
+### Build for Production
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+```bash
+npm run build
+```
 
-### Making a Progressive Web App
+The optimized build will be in the `build/` folder, ready for S3 deployment.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+---
 
-### Advanced Configuration
+## 📁 Project Structure
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+```
+atlas-olympus/
+├── public/                 # Static assets
+├── src/
+│   ├── components/         # Reusable UI components
+│   │   ├── SimpleaAreaChart.jsx
+│   │   ├── PieChart.jsx
+│   │   ├── BarChart.jsx
+│   │   └── ...
+│   ├── scenes/             # Page components
+│   │   ├── dashboard/      # Main dashboard
+│   │   ├── dashboardhistory/  # Historical trends
+│   │   ├── login/          # Authentication
+│   │   └── global/         # Sidebar, Topbar
+│   ├── context/            # React contexts
+│   ├── hooks/              # Custom hooks
+│   ├── data/               # Data fetching utilities
+│   └── theme.js            # MUI theme configuration
+├── Backend/                # Backend utilities
+├── Icons/                  # Custom icons
+└── package.json
+```
 
-### Deployment
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+## 🔧 Configuration
 
-### `npm run build` fails to minify
+### Environment Variables
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+The app uses configuration from `useConfigureGlobals.js` hook. Data is fetched from:
+
+- **S3 Bucket**: `olympus-cache`
+- **History Data**: `NewHistory.json`
+- **Automations**: `AutomationsHistory.json`
+
+### Authentication
+
+Google OAuth is required. Users must have valid Trilogy credentials to access the dashboard.
+
+---
+
+## 📊 Data Structure
+
+### History Data Format
+```javascript
+[
+  "BU Name",           // [0] Business Unit
+  "product_id",        // [1] Product identifier
+  "total_tickets",     // [2] Total closed tickets
+  "...",               // [3-6] Additional metrics
+  "ai_resolved",       // [7] AI resolution count
+  "sla_failed",        // [8] SLA failures
+  "fcr_count",         // [9] First Contact Resolution
+  "...",               // [10] Additional data
+  "week_number",       // [11] Week of year
+  "year"               // [12] Year (e.g., "2026")
+]
+```
+
+---
+
+## 🆕 Recent Updates (v.1.15012026A)
+
+### New Features
+- ✅ **Visibility Toggle**: Each BU/product now has an "eye" icon to exclude/include from charts
+- ✅ **Click Behavior**: Drill-down navigation now only triggers on product name click
+- ✅ **Real-time Filtering**: Charts update instantly when toggling visibility
+
+### UI Improvements
+- Hover effects on product names
+- Visual feedback for excluded items (reduced opacity)
+- Smooth transitions on toggle
+
+---
+
+## 🛠️ Tech Stack
+
+| Technology | Purpose |
+|------------|---------|
+| **React 18** | UI Framework |
+| **Material-UI (MUI) 5** | Component Library |
+| **Recharts** | Data Visualization |
+| **React Router 6** | Navigation |
+| **Google OAuth** | Authentication |
+| **AWS S3** | Data Storage |
+
+---
+
+## 📱 Mobile Support
+
+ATLAS Olympus is fully responsive with dedicated mobile layouts:
+
+- Portrait mode optimizations
+- Touch-friendly controls
+- Adaptive chart sizing
+- Collapsible sidebar
+
+> ⚠️ **Note**: Avoid using `height: "auto"` on PieChart containers in mobile views to prevent infinite re-render loops.
+
+---
+
+## 🚢 Deployment
+
+### S3 Static Hosting
+
+```bash
+# Build the project
+npm run build
+
+# Upload to S3 (requires AWS CLI configured)
+aws s3 sync build/ s3://your-bucket-name --delete
+```
+
+### CloudFront Distribution
+
+The production site is served via CloudFront at:
+- **URL**: https://atlasolympus.csaiautomations.com
+
+---
+
+## 👥 Team
+
+| Role | Contact |
+|------|---------|
+| **Owner** | CS AI Automations Team |
+| **Maintainer** | Xavier Villarroel |
+
+---
+
+## 📄 License
+
+This project is proprietary software owned by Trilogy/Crossover. Unauthorized distribution or use is prohibited.
+
+---
+
+<div align="center">
+
+**Built with ❤️ by the CS AI Automations Team**
+
+*Central Support • Trilogy Group*
+
+</div>

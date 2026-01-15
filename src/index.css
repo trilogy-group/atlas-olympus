@@ -1,13 +1,67 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,200..900;1,200..900&display=swap');
+
+html, 
+body,
+#root
+.app,
+.content {
+  height: 100%;
+  width: 100%; 
+  font-family: 'Source Sans 3', sans-serif;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+.app {
+  display: flex;
+  position: relative;
 }
+
+::-webkit-scrollbar {
+  width: 10px;
+} 
+
+/*- Track -*/
+::-webkit-scrollbar-track {
+  background: #e0e0e0;
+} 
+
+/*- Handle -*/
+::-webkit-scrollbar-thumb {
+  background: #888;
+} 
+
+/*- Handle on hover -*/
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+} 
+
+/* Mobile optimizations */
+@media (max-width: 600px) {
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  /* Smooth scrolling for mobile */
+  html {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+  
+  /* Prevent text selection on tap */
+  * {
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+    -webkit-touch-callout: none;
+  }
+  
+  /* Better touch targets */
+  button, a, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Smooth transitions for mobile */
+@media (prefers-reduced-motion: no-preference) {
+  * {
+    transition: background-color 0.2s ease-in-out;
+  }
+} 
