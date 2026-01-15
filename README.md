@@ -33,17 +33,17 @@ The dashboard is designed for leadership, managers, and support agents to monito
 
 ## 🖼️ Screenshots
 
-### Main Dashboard
-<img width="100%" alt="Main Dashboard" src="https://github.com/user-attachments/assets/82e9f32a-4969-4a0b-9806-b116679a7bf5" />
+### Login Screen
+<img width="100%" alt="Login Screen" src="https://github.com/user-attachments/assets/82e9f32a-4969-4a0b-9806-b116679a7bf5" />
 
-### Historical Trends - All BUs
-<img width="100%" alt="Historical Trends" src="https://github.com/user-attachments/assets/741074b9-cdf3-4638-beee-2caa7d5b81da" />
+### Main Dashboard - Central Support Stats
+<img width="100%" alt="Main Dashboard" src="https://github.com/user-attachments/assets/741074b9-cdf3-4638-beee-2caa7d5b81da" />
 
-### Historical Trends - BU Drill-down
-<img width="100%" alt="BU Drill-down" src="https://github.com/user-attachments/assets/84fb28fb-7734-4356-9a52-82f4c9908092" />
+### Historical Trends - 12 Week Analysis
+<img width="100%" alt="Historical Trends" src="https://github.com/user-attachments/assets/84fb28fb-7734-4356-9a52-82f4c9908092" />
 
-### Historical Trends - Product View
-<img width="100%" alt="Product View" src="https://github.com/user-attachments/assets/746e4cbc-3e3f-4e6d-8c22-cdb153bae7ce" />
+### Automations Dashboard
+<img width="100%" alt="Automations Dashboard" src="https://github.com/user-attachments/assets/746e4cbc-3e3f-4e6d-8c22-cdb153bae7ce" />
 
 ---
 
