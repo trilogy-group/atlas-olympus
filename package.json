@@ -35,7 +35,7 @@
     "crypto-browserify": "^3.12.0",
     "dayjs": "^1.11.13",
     "dotenv": "^16.4.7",
-    "express": "^4.19.2",
+    "express": "^4.22.1",
     "extract-zip-rar": "^0.19.3",
     "formik": "^2.4.6",
     "highcharts-react-official": "^3.2.1",
