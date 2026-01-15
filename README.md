@@ -9,157 +9,73 @@
 
 **Central Support Analytics Dashboard**
 
-*Real-time metrics, historical trends, and team performance insights*
+*Real-time metrics, historical trends, and team performance insights for Trilogy's Central Support operations.*
+
+[Live Demo](https://atlasolympus.csaiautomations.com) · [Report Bug](https://github.com/trilogy-group/atlas-olympus/issues) · [Request Feature](https://github.com/trilogy-group/atlas-olympus/issues)
 
 </div>
 
 ---
 
-## 📊 Overview
+## 📊 What is ATLAS Olympus?
 
-ATLAS Olympus is a comprehensive analytics dashboard for Central Support operations. It provides real-time visibility into ticket metrics, AI resolution rates, SLA compliance, and team performance across all Business Units (BUs) and products.
+ATLAS Olympus is the central analytics platform for **Trilogy's Central Support** team. It aggregates data from multiple sources to provide actionable insights on:
 
-### ✨ Key Features
+- **Ticket volumes** across all Business Units and products
+- **AI resolution rates** for automated ticket handling
+- **SLA compliance** tracking and trends
+- **First Contact Resolution (FCR)** metrics
+- **Team and VP performance** breakdowns
+
+The dashboard is designed for leadership, managers, and support agents to monitor KPIs and make data-driven decisions.
+
+---
+
+## 🖼️ Screenshots
+
+<!-- Add your screenshots here -->
+
+### Main Dashboard
+*Coming soon*
+
+### Historical Trends
+*Coming soon*
+
+### Mobile View
+*Coming soon*
+
+---
+
+## ✨ Key Features
 
 | Feature | Description |
 |---------|-------------|
-| 📈 **Real-time Stats** | Live dashboard with current ticket volumes and metrics |
-| 📉 **Historical Trends** | 12-week trend analysis for all KPIs |
-| 🤖 **AI Resolution Tracking** | Monitor AI-assisted ticket resolution rates |
-| ⏱️ **SLA Compliance** | Track SLA adherence across products |
-| 🔄 **FCR Analysis** | First Contact Resolution metrics |
-| 👥 **VP/Team Views** | Filter by VP assignments and teams |
-| 🎯 **Product Drill-down** | Granular views by BU and product |
-| 👁️ **Visibility Toggles** | Exclude/include products from charts dynamically |
-| 📱 **Mobile Responsive** | Full mobile support with optimized layouts |
+| 📈 **Real-time Dashboard** | Live metrics updated from S3 cache |
+| 📉 **12-Week Trends** | Historical analysis for all KPIs |
+| 🤖 **AI Metrics** | Track AI-assisted resolutions |
+| ⏱️ **SLA Tracking** | Monitor compliance across products |
+| 👁️ **Visibility Toggles** | Dynamically exclude/include items from charts |
+| 🎯 **Drill-down Views** | From BU → Product → Individual metrics |
+| 📱 **Mobile Responsive** | Optimized for all screen sizes |
+| 🔐 **Google OAuth** | Secure authentication via Trilogy credentials |
 
 ---
 
-## 🖥️ Screenshots
-
-### Dashboard View
-```
-┌─────────────────────────────────────────────────────────────┐
-│  ATLAS Olympus                              v.1.15012026A   │
-├──────────┬──────────────────────────────────────────────────┤
-│          │  📊 Tickets Closed    │  🤖 AI Resolution        │
-│  BU List │  [Area Chart]         │  [Area Chart]            │
-│          ├──────────────────────────────────────────────────┤
-│  👁️ Toggle│  🔄 FCR              │  ⏱️ SLA Compliance        │
-│          │  [Area Chart]         │  [Area Chart]            │
-└──────────┴──────────────────────────────────────────────────┘
-```
-
----
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- **Node.js** >= 16.x
-- **npm** >= 8.x
-- Google OAuth credentials (for authentication)
-
-### Installation
+## 🚀 Quick Start
 
 ```bash
-# Clone the repository
+# Clone
 git clone https://github.com/trilogy-group/atlas-olympus.git
 cd atlas-olympus
 
-# Install dependencies
+# Install
 npm install
 
-# Start development server
+# Run
 npm start
 ```
 
-The app will open at [http://localhost:3000](http://localhost:3000)
-
-### Build for Production
-
-```bash
-npm run build
-```
-
-The optimized build will be in the `build/` folder, ready for S3 deployment.
-
----
-
-## 📁 Project Structure
-
-```
-atlas-olympus/
-├── public/                 # Static assets
-├── src/
-│   ├── components/         # Reusable UI components
-│   │   ├── SimpleaAreaChart.jsx
-│   │   ├── PieChart.jsx
-│   │   ├── BarChart.jsx
-│   │   └── ...
-│   ├── scenes/             # Page components
-│   │   ├── dashboard/      # Main dashboard
-│   │   ├── dashboardhistory/  # Historical trends
-│   │   ├── login/          # Authentication
-│   │   └── global/         # Sidebar, Topbar
-│   ├── context/            # React contexts
-│   ├── hooks/              # Custom hooks
-│   ├── data/               # Data fetching utilities
-│   └── theme.js            # MUI theme configuration
-├── Backend/                # Backend utilities
-├── Icons/                  # Custom icons
-└── package.json
-```
-
----
-
-## 🔧 Configuration
-
-### Environment Variables
-
-The app uses configuration from `useConfigureGlobals.js` hook. Data is fetched from:
-
-- **S3 Bucket**: `olympus-cache`
-- **History Data**: `NewHistory.json`
-- **Automations**: `AutomationsHistory.json`
-
-### Authentication
-
-Google OAuth is required. Users must have valid Trilogy credentials to access the dashboard.
-
----
-
-## 📊 Data Structure
-
-### History Data Format
-```javascript
-[
-  "BU Name",           // [0] Business Unit
-  "product_id",        // [1] Product identifier
-  "total_tickets",     // [2] Total closed tickets
-  "...",               // [3-6] Additional metrics
-  "ai_resolved",       // [7] AI resolution count
-  "sla_failed",        // [8] SLA failures
-  "fcr_count",         // [9] First Contact Resolution
-  "...",               // [10] Additional data
-  "week_number",       // [11] Week of year
-  "year"               // [12] Year (e.g., "2026")
-]
-```
-
----
-
-## 🆕 Recent Updates (v.1.15012026A)
-
-### New Features
-- ✅ **Visibility Toggle**: Each BU/product now has an "eye" icon to exclude/include from charts
-- ✅ **Click Behavior**: Drill-down navigation now only triggers on product name click
-- ✅ **Real-time Filtering**: Charts update instantly when toggling visibility
-
-### UI Improvements
-- Hover effects on product names
-- Visual feedback for excluded items (reduced opacity)
-- Smooth transitions on toggle
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
@@ -167,44 +83,51 @@ Google OAuth is required. Users must have valid Trilogy credentials to access th
 
 | Technology | Purpose |
 |------------|---------|
-| **React 18** | UI Framework |
-| **Material-UI (MUI) 5** | Component Library |
-| **Recharts** | Data Visualization |
-| **React Router 6** | Navigation |
-| **Google OAuth** | Authentication |
-| **AWS S3** | Data Storage |
+| React 18 | UI Framework |
+| Material-UI 5 | Component Library |
+| Recharts | Data Visualization |
+| React Router 6 | Navigation |
+| Google OAuth | Authentication |
+| AWS S3 | Data Storage |
 
 ---
 
-## 📱 Mobile Support
+## 📁 Project Structure
 
-ATLAS Olympus is fully responsive with dedicated mobile layouts:
-
-- Portrait mode optimizations
-- Touch-friendly controls
-- Adaptive chart sizing
-- Collapsible sidebar
-
-> ⚠️ **Note**: Avoid using `height: "auto"` on PieChart containers in mobile views to prevent infinite re-render loops.
+```
+atlas-olympus/
+├── src/
+│   ├── components/      # Reusable charts and UI components
+│   ├── scenes/          # Page components (dashboard, history, login)
+│   ├── context/         # React contexts (period, reload)
+│   ├── hooks/           # Custom hooks
+│   ├── data/            # Data fetching utilities
+│   └── theme.js         # MUI theme configuration
+├── public/              # Static assets
+└── package.json
+```
 
 ---
 
 ## 🚢 Deployment
 
-### S3 Static Hosting
+### Production URL
+**https://atlasolympus.csaiautomations.com**
 
+### Build & Deploy
 ```bash
-# Build the project
 npm run build
-
-# Upload to S3 (requires AWS CLI configured)
-aws s3 sync build/ s3://your-bucket-name --delete
+aws s3 sync build/ s3://your-bucket --delete
 ```
 
-### CloudFront Distribution
+---
 
-The production site is served via CloudFront at:
-- **URL**: https://atlasolympus.csaiautomations.com
+## 🆕 Latest Release (v.1.15012026A)
+
+- ✅ Visibility toggles for BUs and products in history charts
+- ✅ Improved click behavior (name = drill-down, eye = toggle)
+- ✅ Real-time chart filtering
+- ✅ Visual feedback for excluded items
 
 ---
 
@@ -219,14 +142,14 @@ The production site is served via CloudFront at:
 
 ## 📄 License
 
-This project is proprietary software owned by Trilogy/Crossover. Unauthorized distribution or use is prohibited.
+Proprietary software owned by Trilogy/Crossover. Unauthorized distribution prohibited.
 
 ---
 
 <div align="center">
 
-**Built with ❤️ by the CS AI Automations Team**
+**Built with ❤️ by CS AI Automations**
 
-*Central Support • Trilogy Group*
+*Central Support · Trilogy Group*
 
 </div>
