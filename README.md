@@ -225,7 +225,7 @@ This project is proprietary software owned by Trilogy/Crossover. Unauthorized di
 
 <div align="center">
 
-**Built with ❤️ by the CS AI Automations Team**
+**Built by the CS AI Automations Team**
 
 *Central Support • Trilogy Group*
 
