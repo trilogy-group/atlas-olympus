@@ -11,7 +11,7 @@
 
 *Real-time metrics, historical trends, and team performance insights for Trilogy's Central Support operations.*
 
-[Live Demo](https://atlasolympus.csaiautomations.com) · [Report Bug](https://github.com/trilogy-group/atlas-olympus/issues) · [Request Feature](https://github.com/trilogy-group/atlas-olympus/issues)
+[Official Website](https://atlasolympus.csaiautomations.com) · [Report Bug](https://github.com/trilogy-group/atlas-olympus/issues) · [Request Feature](https://github.com/trilogy-group/atlas-olympus/issues)
 
 </div>
 
