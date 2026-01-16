@@ -470,7 +470,7 @@ const DataMatrix = ({ product }) => {
         {/* AI CSAT Coverage Widget */}
           <Box
             gridColumn={isPortraitMobile ? "1" : `span 40`}
-            gridRow={isPortraitMobile ? "4" : "span 3"}
+            gridRow={isPortraitMobile ? "4" : "span 1"}
             backgroundColor={colors.primary[400]}
             display="flex"
             alignItems="center"
@@ -505,7 +505,7 @@ const DataMatrix = ({ product }) => {
         {/* AI CSAT Average Score Widget */}
           <Box
             gridColumn={isPortraitMobile ? "2" : `span 40`}
-            gridRow={isPortraitMobile ? "4" : "span 3"}
+            gridRow={isPortraitMobile ? "4" : "span 1"}
             backgroundColor={colors.primary[400]}
             display="flex"
             alignItems="center"
