@@ -220,7 +220,8 @@ const DataMatrix = ({ product }) => {
       { 
         field: "ai_csat_score", 
         headerName: "AI CSAT", 
-        flex: 1, 
+        flex: 0.5, 
+        minWidth: 80,
         renderHeader: () => (
           <div style={{ textAlign: "center", padding: "12px" }}>
             AI CSAT
@@ -233,6 +234,28 @@ const DataMatrix = ({ product }) => {
               : colors.grey[500], 
             textAlign: "center",
             fontWeight: params.value && params.value !== '' ? "bold" : "normal"
+          }}>
+            {params.value && params.value !== '' ? params.value : '-'}
+          </div>
+        )
+      },
+      { 
+        field: "ai_csat_justification", 
+        headerName: "AI CSAT Justification", 
+        flex: 2, 
+        minWidth: 300,
+        renderHeader: () => (
+          <div style={{ textAlign: "center", padding: "12px" }}>
+            AI CSAT Justification
+          </div>
+        ),
+        renderCell: (params) => (
+          <div style={{ 
+            color: params.value && params.value !== '' ? colors.grey[100] : colors.grey[500], 
+            textAlign: "left",
+            fontSize: "11px",
+            lineHeight: "1.4",
+            padding: "4px"
           }}>
             {params.value && params.value !== '' ? params.value : '-'}
           </div>
