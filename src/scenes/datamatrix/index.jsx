@@ -255,7 +255,14 @@ const DataMatrix = ({ product }) => {
             textAlign: "left",
             fontSize: "11px",
             lineHeight: "1.4",
-            padding: "4px"
+            padding: "8px 4px",
+            whiteSpace: "normal",
+            wordWrap: "break-word",
+            overflow: "hidden",
+            display: "-webkit-box",
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: "vertical",
+            maxHeight: "52px"
           }}>
             {params.value && params.value !== '' ? params.value : '-'}
           </div>
@@ -558,6 +565,7 @@ const DataMatrix = ({ product }) => {
                   columns={columns}
                   getRowId={(row) => row.ticket_id}
                   autoHeight={false}  // Set this to false if you want to control the height with grid
+                  rowHeight={70}
               />
           </Box>
 
