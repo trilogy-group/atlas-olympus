@@ -36,6 +36,12 @@ const CSVDownloads = () => {
     // { name: "Custom Metrics", checked: false, processing: false, clonedFileUrl: null, sheet_id: "CUSTOM" },
   ]);
 
+  const [csatReports, setCsatReports] = useState([
+    { name: "CSAT (1 Day)", checked: false, processing: false, sheet_id: "1j1SCJrBrYb8Dx5l6QkMB9SX7WMkV_ZzSZOCxs3Tm6Os" },
+    { name: "CSAT (1 Week)", checked: false, processing: false, sheet_id: "1zUZJJsqkKfs9Fu4gx5tOW9m216Kft5ucdoutcY02LEM" },
+    { name: "CSAT (4 Weeks)", checked: false, processing: false, sheet_id: "1I5cdCL3k_h25DGzySpkQQuqsn0Rbuv-KafEEtVCgj3E" },
+  ]);
+
   const [dataGridRows, setDataGridRows] = useState([]);
   const [loadingDataGrid, setLoadingDataGrid] = useState(true);
   const [customStartDate, setCustomStartDate] = useState(null);
@@ -79,6 +85,12 @@ const CSVDownloads = () => {
     if (updatedReports[index].name === "Custom Metrics") {
       setShowDatePickers(updatedReports[index].checked);
     }
+  };
+
+  const handleCsatCheck = (index) => {
+    const updatedReports = [...csatReports];
+    updatedReports[index].checked = !updatedReports[index].checked;
+    setCsatReports(updatedReports);
   };
 
   const handleProcess = async () => {
@@ -151,6 +163,65 @@ const CSVDownloads = () => {
     }
 
     fetchDataGridData();
+  };
+
+  const handleCsatDownload = async () => {
+    const selectedReports = csatReports.filter((report) => report.checked);
+
+    if (selectedReports.length === 0) {
+      alert("Please select at least one CSAT report to download.");
+      return;
+    }
+
+    for (const report of selectedReports) {
+      const index = csatReports.indexOf(report);
+
+      setCsatReports((prevReports) => {
+        const updatedReports = [...prevReports];
+        updatedReports[index].processing = true;
+        return updatedReports;
+      });
+
+      try {
+        const payload = {
+          sheet_id: report.sheet_id,
+        };
+
+        // TODO: Replace with actual Function URL after deployment
+        const url = "https://FUNCTION_URL_PLACEHOLDER.lambda-url.us-east-1.on.aws/";
+
+        const response = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        if (response.ok) {
+          const csvBlob = await response.blob();
+          const downloadUrl = window.URL.createObjectURL(csvBlob);
+          const link = document.createElement('a');
+          link.href = downloadUrl;
+          link.download = `${userInfo.given_name}_${report.name.replace(/ /g, '_')}_${new Date().toISOString().split('T')[0]}.csv`;
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          window.URL.revokeObjectURL(downloadUrl);
+        } else {
+          console.error("API call failed", await response.text());
+          alert(`Failed to download ${report.name}`);
+        }
+      } catch (error) {
+        console.error(`Error downloading report ${report.name}:`, error);
+        alert(`Error downloading ${report.name}: ${error.message}`);
+      } finally {
+        setCsatReports((prevReports) => {
+          const updatedReports = [...prevReports];
+          updatedReports[index].processing = false;
+          updatedReports[index].checked = false;
+          return updatedReports;
+        });
+      }
+    }
   };
 
   const columns = [
@@ -350,6 +421,110 @@ const CSVDownloads = () => {
             >
               Process
             </Button>
+
+            {/* CSAT Reports Section */}
+            <Box mt={4}>
+              <Typography variant="h5" sx={{ color: colors.blueAccent[300], mb: 2, fontWeight: 600 }}>
+                📊 CSAT Analysis Reports
+              </Typography>
+              <Typography variant="body2" sx={{ color: colors.grey[300], mb: 2 }}>
+                Download CSV files with AI CSAT scores and justifications
+              </Typography>
+
+              {csatReports.map((report, index) => (
+                <Paper
+                  key={index}
+                  elevation={3}
+                  sx={{
+                    p: 3,
+                    mb: 2,
+                    backgroundColor: transparent(colors.blueAccent[900]),
+                    color: colors.primary[100],
+                  }}
+                >
+                  <Grid container spacing={2} alignItems="center">
+                    <Grid
+                      item
+                      xs={6}
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        color: report.checked
+                          ? colors.greenAccent[300]
+                          : colors.primary[100],
+                      }}
+                    >
+                      <Checkbox
+                        checked={report.checked}
+                        onChange={() => handleCsatCheck(index)}
+                        sx={{
+                          color: report.checked
+                            ? colors.greenAccent[300]
+                            : colors.primary[100],
+                          "&.Mui-checked": {
+                            color: colors.greenAccent[300],
+                          },
+                          marginRight: "10px",
+                        }}
+                      />
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          color: report.checked
+                            ? colors.greenAccent[300]
+                            : colors.primary[100],
+                        }}
+                      >
+                        {report.name}
+                      </Typography>
+                    </Grid>
+
+                    <Grid item xs={6} sx={{ textAlign: "right" }}>
+                      {report.processing && (
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "flex-end",
+                            gap: "10px",
+                          }}
+                        >
+                          <Typography
+                            variant="body1"
+                            sx={{
+                              color: colors.greenAccent[300],
+                            }}
+                          >
+                            Generating...
+                          </Typography>
+                          <CircularProgress
+                            size={24}
+                            sx={{
+                              color: colors.greenAccent[300],
+                            }}
+                          />
+                        </Box>
+                      )}
+                    </Grid>
+                  </Grid>
+                </Paper>
+              ))}
+
+              <Button
+                variant="contained"
+                onClick={handleCsatDownload}
+                sx={{
+                  mt: 2,
+                  backgroundColor: colors.blueAccent[700],
+                  color: colors.grey[100],
+                  "&:hover": {
+                    backgroundColor: colors.blueAccent[800],
+                  },
+                }}
+              >
+                Download CSV
+              </Button>
+            </Box>
           </Grid>
 
           <Grid item xs={6}>
