@@ -259,7 +259,7 @@ const Topbar = () => {
                         }}
                     >
                         <a>
-                            v.1.01162026B
+                            v.1.01162026C
                         </a>
                     </Typography>
                 </Box>
