@@ -187,8 +187,7 @@ const CSVDownloads = () => {
           sheet_id: report.sheet_id,
         };
 
-        // TODO: Replace with actual Function URL after deployment
-        const url = "https://FUNCTION_URL_PLACEHOLDER.lambda-url.us-east-1.on.aws/";
+        const url = "https://n5cwrwb5kcizsjh33tpm5rt3wy0oizws.lambda-url.us-east-1.on.aws/";
 
         const response = await fetch(url, {
           method: "POST",
@@ -425,7 +424,7 @@ const CSVDownloads = () => {
             {/* CSAT Reports Section */}
             <Box mt={4}>
               <Typography variant="h5" sx={{ color: colors.blueAccent[300], mb: 2, fontWeight: 600 }}>
-                📊 CSAT Analysis Reports
+                CSAT Analysis Reports
               </Typography>
               <Typography variant="body2" sx={{ color: colors.grey[300], mb: 2 }}>
                 Download CSV files with AI CSAT scores and justifications
