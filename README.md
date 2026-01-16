@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![Version](https://img.shields.io/badge/version-1.15012026A-blue)
+![Version](https://img.shields.io/badge/version-1.01162026A-blue)
 ![React](https://img.shields.io/badge/React-18.x-61DAFB?logo=react)
 ![MUI](https://img.shields.io/badge/MUI-5.x-007FFF?logo=mui)
 ![License](https://img.shields.io/badge/license-Proprietary-red)
@@ -54,6 +54,7 @@ The dashboard is designed for leadership, managers, and support agents to monito
 | 📈 **Real-time Dashboard** | Live metrics updated from S3 cache |
 | 📉 **12-Week Trends** | Historical analysis for all KPIs |
 | 🤖 **AI Metrics** | Track AI-assisted resolutions |
+| ⭐ **AI CSAT Scores** | Customer satisfaction analysis from AI interactions |
 | ⏱️ **SLA Tracking** | Monitor compliance across products |
 | 👁️ **Visibility Toggles** | Dynamically exclude/include items from charts |
 | 🎯 **Drill-down Views** | From BU → Product → Individual metrics |
@@ -123,8 +124,17 @@ aws s3 sync build/ s3://your-bucket --delete
 
 ---
 
-## 🆕 Latest Release (v.1.15012026A)
+## 🆕 Latest Release (v.1.01162026A)
 
+### AI CSAT Score Integration
+- ✅ **Main Dashboard**: Two new widgets showing CSAT coverage and average score
+- ✅ **BU/Product Views**: CSAT statistics in list view (e.g., "AI-CSAT: 3.02 (57 tickets)")
+- ✅ **Ticket Detail**: New "AI CSAT" column with color-coded scores (1-5 scale)
+- ✅ **Data Source**: Integrated with `past_ticket_analysis` table
+- ✅ **Coverage Tracking**: Shows percentage of tickets analyzed by AI
+- ✅ **Smart Filtering**: Excludes empty CSAT scores from calculations
+
+### Previous Updates
 - ✅ Visibility toggles for BUs and products in history charts
 - ✅ Improved click behavior (name = drill-down, eye = toggle)
 - ✅ Real-time chart filtering

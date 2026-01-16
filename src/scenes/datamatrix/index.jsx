@@ -8,6 +8,7 @@ import { performGetProductsRaw } from "../../data/fetchData";
 import ProgressCircle from "../../components/ProgressCircle";
 import { getProductRealName } from "../../data/fetchData";
 import { useIsForcedMobile } from "../../hooks/useIsMobile";
+import SentimentSatisfiedAltIcon from '@mui/icons-material/SentimentSatisfiedAlt';
 
 const DataMatrix = ({ product }) => {
   const globals = useConfigureGlobals();
@@ -215,6 +216,27 @@ const DataMatrix = ({ product }) => {
           </div>
         )
       },
+      { 
+        field: "ai_csat_score", 
+        headerName: "AI CSAT", 
+        flex: 1, 
+        renderHeader: () => (
+          <div style={{ textAlign: "center", padding: "12px" }}>
+            AI CSAT
+          </div>
+        ),
+        renderCell: (params) => (
+          <div style={{ 
+            color: params.value && params.value !== '' 
+              ? (Number(params.value) >= 4 ? colors.greenAccent[400] : Number(params.value) >= 3 ? colors.blueAccent[300] : colors.redAccent[400])
+              : colors.grey[500], 
+            textAlign: "center",
+            fontWeight: params.value && params.value !== '' ? "bold" : "normal"
+          }}>
+            {params.value && params.value !== '' ? params.value : '-'}
+          </div>
+        )
+      },
     ];
   }
 
@@ -232,6 +254,10 @@ const DataMatrix = ({ product }) => {
   let slaTotal = 0;
   let slaTotalPercentage = 0;
 
+  let csatTotal = 0;
+  let csatCount = 0;
+  let csatAverage = 0;
+
   solvedTotal = dataObject.length;
   solvedTotalPercentage = solvedTotal / solvedTotal;
 
@@ -243,6 +269,14 @@ const DataMatrix = ({ product }) => {
 
   slaTotal = dataObject.reduce((sum, row) => sum + Number(row.sla), 0);
   slaTotalPercentage = slaTotal / solvedTotal ;
+
+  // Calculate CSAT average (only for tickets with ai_csat_score)
+  const ticketsWithCsat = dataObject.filter(row => row.ai_csat_score && row.ai_csat_score !== '');
+  csatCount = ticketsWithCsat.length;
+  if (csatCount > 0) {
+    csatTotal = ticketsWithCsat.reduce((sum, row) => sum + Number(row.ai_csat_score), 0);
+    csatAverage = csatTotal / csatCount;
+  }
   
   return (
     <Box m={isPortraitMobile ? "10px" : "20px"}>
@@ -429,6 +463,53 @@ const DataMatrix = ({ product }) => {
                 {slaTotalPercentage === 0 ? `No ticket failed SLA in this period` : `${slaTotal} Ticket(s) failed SLA this period`}
               </Typography>
             </Box>
+          </Box>
+
+        {/* AI CSAT Score Widget */}
+          <Box
+            gridColumn={isPortraitMobile ? "1 / 3" : `span 80`}
+            gridRow={isPortraitMobile ? "4" : "span 1"}
+            backgroundColor={colors.primary[400]}
+            display="flex"
+            flexDirection="column"
+            alignItems="center"
+            justifyContent="center"
+            p={isPortraitMobile ? "20px" : "15px"}
+            borderRadius={isPortraitMobile ? "12px" : undefined}
+            boxShadow={isPortraitMobile ? "0 2px 8px rgba(0,0,0,0.2)" : undefined}
+          >
+            {csatCount > 0 ? (
+              <Box display="flex" alignItems="center" gap="40px" width="100%" justifyContent="center">
+                <Box display="flex" alignItems="center" gap="10px">
+                  <SentimentSatisfiedAltIcon sx={{ color: colors.greenAccent[500], fontSize: "30px" }} />
+                  <Typography variant="h5" fontWeight="600">
+                    AI CSAT Score
+                  </Typography>
+                </Box>
+                <Typography
+                  variant="h2"
+                  fontWeight="bold"
+                  color={csatAverage >= 4 ? colors.greenAccent[400] : csatAverage >= 3 ? colors.blueAccent[300] : colors.redAccent[400]}
+                >
+                  {csatAverage.toFixed(2)}
+                </Typography>
+                <Typography variant="h5" color={colors.greenAccent[500]}>
+                  {`${((csatCount / solvedTotal) * 100).toFixed(1)}% coverage`}
+                </Typography>
+                <Typography fontSize="14px" color={colors.grey[300]}>
+                  {`${csatCount} of ${solvedTotal} tickets analyzed`}
+                </Typography>
+              </Box>
+            ) : (
+              <>
+                <Typography variant="h5" fontWeight="600" color={colors.grey[100]} mb="5px">
+                  No data
+                </Typography>
+                <Typography fontSize="14px" color={colors.grey[400]}>
+                  No tickets have AI CSAT score in this period
+                </Typography>
+              </>
+            )}
           </Box>
 
       </Box>

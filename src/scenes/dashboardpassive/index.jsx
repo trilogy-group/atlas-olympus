@@ -25,6 +25,7 @@ import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
 import HourglassTopIcon from '@mui/icons-material/HourglassTop';
 import HourglassBottomIcon from '@mui/icons-material/HourglassBottom';
 import HourglassFullIcon from '@mui/icons-material/HourglassFull';
+import SentimentSatisfiedAltIcon from '@mui/icons-material/SentimentSatisfiedAlt';
 
 import { useReload } from "../../context/ReloadContext";
 import Header from "../../components/Header";
@@ -211,6 +212,11 @@ const DashboardPassive = ({ bu_subset = "All", vpName = "All" }) => {
   let averageTimeL1_bu = 0;
   let averageTimeL2_bu = 0;
 
+  let avgCsatScore = 0;
+  let csatTicketCount = 0;
+  let avgCsatScore_bu = 0;
+  let csatTicketCount_bu = 0;
+
   let finalTotals;
   /*- SET VARIABLES -*/
 
@@ -250,6 +256,14 @@ const DashboardPassive = ({ bu_subset = "All", vpName = "All" }) => {
     averageTimeL1 = Math.round(filteredRows.reduce((sum, row) => sum + Number(row[14]), 0) / filteredRows.length);
     averageTimeL2 = Math.round(filteredRows.reduce((sum, row) => sum + Number(row[15]), 0) / filteredRows.length);
 
+    // Calculate CSAT (row[18] = avg_ai_csat_score, row[19] = csat_ticket_count)
+    const rowsWithCsat = filteredRows.filter(row => row[18] && row[18] !== '' && row[19] && Number(row[19]) > 0);
+    csatTicketCount = rowsWithCsat.reduce((sum, row) => sum + Number(row[19]), 0);
+    if (csatTicketCount > 0) {
+      const weightedCsatSum = rowsWithCsat.reduce((sum, row) => sum + (Number(row[18]) * Number(row[19])), 0);
+      avgCsatScore = Number((weightedCsatSum / csatTicketCount).toFixed(2));
+    }
+
     if (bu_subset !== "All") {
       
       filteredRows = dataMatrix.filter(row => row[0] === bu_subset); //Changes the amount of rows based on the bu.
@@ -275,6 +289,14 @@ const DashboardPassive = ({ bu_subset = "All", vpName = "All" }) => {
         averageTimeSolved_bu = Math.round(dataMatrix.filter(row => row[0] === bu_subset).reduce((sum, row) => sum + Number(row[13]), 0) / filteredRows.length);
         averageTimeL1_bu = Math.round(dataMatrix.filter(row => row[0] === bu_subset).reduce((sum, row) => sum + Number(row[14]), 0) / filteredRows.length);
         averageTimeL2_bu = Math.round(dataMatrix.filter(row => row[0] === bu_subset).reduce((sum, row) => sum + Number(row[15]), 0) / filteredRows.length);
+
+        // Calculate CSAT for BU subset
+        const rowsWithCsat_bu = filteredRows.filter(row => row[18] && row[18] !== '' && row[19] && Number(row[19]) > 0);
+        csatTicketCount_bu = rowsWithCsat_bu.reduce((sum, row) => sum + Number(row[19]), 0);
+        if (csatTicketCount_bu > 0) {
+          const weightedCsatSum_bu = rowsWithCsat_bu.reduce((sum, row) => sum + (Number(row[18]) * Number(row[19])), 0);
+          avgCsatScore_bu = Number((weightedCsatSum_bu / csatTicketCount_bu).toFixed(2));
+        }
 
       pieChartTotalAllData = createPieGraphicBU(dataMatrix, bu_subset);
     } else {
@@ -619,6 +641,80 @@ const DashboardPassive = ({ bu_subset = "All", vpName = "All" }) => {
         </Box>
 
         {/* -------------------------------------------------------------------------------------------------------------------------- */}
+        {/* ROW 2.5 - AI CSAT Score */}
+        {/* -------------------------------------------------------------------------------------------------------------------------- */}
+
+        {/* AI CSAT Coverage Widget */}
+        <Box
+          gridColumn={isPortraitMobile ? "span 1" : `span 60`}
+          backgroundColor={colors.primary[400]}
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          borderRadius={isPortraitMobile ? "12px" : "8px"}
+          p={isPortraitMobile ? "12px 8px" : "10px"}
+          boxShadow={isPortraitMobile ? "0 2px 8px rgba(0,0,0,0.2)" : "none"}
+        >
+          {((bu_subset === "All" && csatTicketCount > 0) || (bu_subset !== "All" && csatTicketCount_bu > 0)) ? (
+            <StatBox
+              title={`${(bu_subset === "All") ? csatTicketCount : csatTicketCount_bu} tickets (${(bu_subset === "All") ? ((csatTicketCount / totalTickets) * 100).toFixed(1) : ((csatTicketCount_bu / totalTickets_bu) * 100).toFixed(1)}% of the total)`}
+              subtitle={`AI CSAT Coverage (${bu_subset})`}
+              progress={(bu_subset === "All") ? (csatTicketCount / totalTickets) : (csatTicketCount_bu / totalTickets_bu)}
+              increase={`${(bu_subset === "All") ? ((csatTicketCount / totalTickets) * 100).toFixed(1) : ((csatTicketCount_bu / totalTickets_bu) * 100).toFixed(1)}%`}
+              icon={
+                <ConfirmationNumberRoundedIcon
+                  sx={{ color: colors.greenAccent[300], fontSize: "25px" }}
+                />
+              }
+            />
+          ) : (
+            <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" width="100%">
+              <Typography variant={isPortraitMobile ? "body2" : "h6"} fontWeight="600" color={colors.grey[100]} mb="5px">
+                No data
+              </Typography>
+              <Typography fontSize={isPortraitMobile ? "9px" : "11px"} textAlign="center" color={colors.grey[400]}>
+                No tickets have AI CSAT score in this period
+              </Typography>
+            </Box>
+          )}
+        </Box>
+
+        {/* AI CSAT Average Score Widget */}
+        <Box
+          gridColumn={isPortraitMobile ? "span 1" : `span 60`}
+          backgroundColor={colors.primary[400]}
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          borderRadius={isPortraitMobile ? "12px" : "8px"}
+          p={isPortraitMobile ? "12px 8px" : "10px"}
+          boxShadow={isPortraitMobile ? "0 2px 8px rgba(0,0,0,0.2)" : "none"}
+        >
+          {((bu_subset === "All" && csatTicketCount > 0) || (bu_subset !== "All" && csatTicketCount_bu > 0)) ? (
+            <StatBox
+              title={`${(bu_subset === "All") ? avgCsatScore.toFixed(2) : avgCsatScore_bu.toFixed(2)} / 5.00`}
+              subtitle={`AI CSAT Average Score (${bu_subset})`}
+              progress={(bu_subset === "All") ? (avgCsatScore / 5) : (avgCsatScore_bu / 5)}
+              increase={`${(bu_subset === "All") ? avgCsatScore.toFixed(2) : avgCsatScore_bu.toFixed(2)} avg`}
+              icon={
+                <SentimentSatisfiedAltIcon
+                  sx={{ color: colors.greenAccent[300], fontSize: "25px" }}
+                />
+              }
+            />
+          ) : (
+            <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" width="100%">
+              <Typography variant={isPortraitMobile ? "body2" : "h6"} fontWeight="600" color={colors.grey[100]} mb="5px">
+                No data
+              </Typography>
+              <Typography fontSize={isPortraitMobile ? "9px" : "11px"} textAlign="center" color={colors.grey[400]}>
+                No tickets have AI CSAT score in this period
+              </Typography>
+            </Box>
+          )}
+        </Box>
+
+        {/* -------------------------------------------------------------------------------------------------------------------------- */}
         {/* ROW 3 */}
         {/* -------------------------------------------------------------------------------------------------------------------------- */}
 
@@ -750,6 +846,9 @@ const DashboardPassive = ({ bu_subset = "All", vpName = "All" }) => {
                           totalAvgResT: 0,
 
                           avgIterationsCount: 0,
+                          
+                          totalCsatSum: 0,
+                          totalCsatCount: 0,
                         };
                       }
 
@@ -773,6 +872,14 @@ const DashboardPassive = ({ bu_subset = "All", vpName = "All" }) => {
 
                       acc[bu].avgIterationsCount += 1;
 
+                      // Accumulate CSAT (row[18] = avg_ai_csat_score, row[19] = csat_ticket_count)
+                      const rowCsatScore = row[18];
+                      const rowCsatCount = Number(row[19]) || 0;
+                      if (rowCsatScore && rowCsatScore !== '' && rowCsatCount > 0) {
+                        acc[bu].totalCsatSum += Number(rowCsatScore) * rowCsatCount;
+                        acc[bu].totalCsatCount += rowCsatCount;
+                      }
+
                       return acc;
                     }, {})
                 )
@@ -790,7 +897,10 @@ const DashboardPassive = ({ bu_subset = "All", vpName = "All" }) => {
                   const avgL2 = (metrics.totalAvgL2 / metrics.avgIterationsCount);
 
                   const avgIRT = (metrics.totalAvgIRT / metrics.avgIterationsCount); 
-                  const avgResT = (metrics.totalAvgResT / metrics.avgIterationsCount); 
+                  const avgResT = (metrics.totalAvgResT / metrics.avgIterationsCount);
+
+                  const buCsatScore = metrics.totalCsatCount > 0 ? (metrics.totalCsatSum / metrics.totalCsatCount).toFixed(2) : null;
+                  const buCsatCount = metrics.totalCsatCount || 0; 
 
                   return (
                     <Box
@@ -879,6 +989,11 @@ const DashboardPassive = ({ bu_subset = "All", vpName = "All" }) => {
                         <Typography fontSize={isPortraitMobile ? "10px" : "8px"} color={colors.redAccent[300]}>
                           Avg-Res: [ {convertSeconds(Math.round(avgResT))} ]
                         </Typography>
+
+                        {/* Fourth row - CSAT */}
+                        <Typography fontSize={isPortraitMobile ? "10px" : "8px"} color={colors.grey[100]} sx={{ gridColumn: "span 2" }}>
+                          AI-CSAT: {buCsatScore !== null ? `${buCsatScore} (${buCsatCount} tickets)` : 'N/A'}
+                        </Typography>
                       </Box>
                     </Box>
                   );
@@ -905,6 +1020,9 @@ const DashboardPassive = ({ bu_subset = "All", vpName = "All" }) => {
 
                     const avgIRT = Number(row[16]);
                     const avgResT = Number(row[17]);
+
+                    const productCsatScore = row[18] && row[18] !== '' ? Number(row[18]).toFixed(2) : null;
+                    const productCsatCount = Number(row[19]) || 0;
 
                     const totalSLA = ((numberOfTickets - slaBreach) / numberOfTickets) * 100;
                     const fcrPercentage = (fcr / numberOfTickets) * 100;
@@ -999,6 +1117,11 @@ const DashboardPassive = ({ bu_subset = "All", vpName = "All" }) => {
                           </Typography>
                           <Typography fontSize={isPortraitMobile ? "10px" : "8px"} color={colors.redAccent[300]}>
                             Avg-Res: [ {convertSeconds(Math.round(avgResT))} ]
+                          </Typography>
+
+                          {/* Fourth row - CSAT */}
+                          <Typography fontSize={isPortraitMobile ? "10px" : "8px"} color={colors.grey[100]} sx={{ gridColumn: "span 2" }}>
+                            AI-CSAT: {productCsatScore !== null ? `${productCsatScore} (${productCsatCount} tickets)` : 'N/A'}
                           </Typography>
                         </Box>
                       </Box>
