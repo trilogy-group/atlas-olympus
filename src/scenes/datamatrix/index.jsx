@@ -8,7 +8,6 @@ import { performGetProductsRaw } from "../../data/fetchData";
 import ProgressCircle from "../../components/ProgressCircle";
 import { getProductRealName } from "../../data/fetchData";
 import { useIsForcedMobile } from "../../hooks/useIsMobile";
-import SentimentSatisfiedAltIcon from '@mui/icons-material/SentimentSatisfiedAlt';
 
 const DataMatrix = ({ product }) => {
   const globals = useConfigureGlobals();
@@ -465,51 +464,90 @@ const DataMatrix = ({ product }) => {
             </Box>
           </Box>
 
-        {/* AI CSAT Score Widget */}
+        {/* AI CSAT Coverage Widget */}
           <Box
-            gridColumn={isPortraitMobile ? "1 / 3" : `span 80`}
-            gridRow={isPortraitMobile ? "4" : "span 1"}
+            gridColumn={isPortraitMobile ? "1" : `span 40`}
+            gridRow={isPortraitMobile ? "4" : "span 3"}
             backgroundColor={colors.primary[400]}
-            display="flex"
-            flexDirection="column"
-            alignItems="center"
-            justifyContent="center"
-            p={isPortraitMobile ? "20px" : "15px"}
+            p={isPortraitMobile ? "20px" : "30px"}
             borderRadius={isPortraitMobile ? "12px" : undefined}
             boxShadow={isPortraitMobile ? "0 2px 8px rgba(0,0,0,0.2)" : undefined}
           >
-            {csatCount > 0 ? (
-              <Box display="flex" alignItems="center" gap="40px" width="100%" justifyContent="center">
-                <Box display="flex" alignItems="center" gap="10px">
-                  <SentimentSatisfiedAltIcon sx={{ color: colors.greenAccent[500], fontSize: "30px" }} />
-                  <Typography variant="h5" fontWeight="600">
-                    AI CSAT Score
+            <Typography variant={isPortraitMobile ? "h6" : "h5"} fontWeight="600">
+              AI CSAT Coverage
+            </Typography>
+            <Box
+              display="flex"
+              flexDirection="column"
+              alignItems="center"
+              mt={isPortraitMobile ? "15px" : "25px"}
+            >
+              {csatCount > 0 ? (
+                <>
+                  <ProgressCircle
+                    progress={csatCount / solvedTotal}
+                    size={isPortraitMobile ? "100" : "150"}
+                  />
+                  <Typography
+                    variant={isPortraitMobile ? "h6" : "h5"}
+                    color={colors.greenAccent[500]}
+                    sx={{ mt: isPortraitMobile ? "10px" : "15px" }}
+                  >
+                    {((csatCount / solvedTotal) * 100).toFixed(1)}%
                   </Typography>
-                </Box>
-                <Typography
-                  variant="h2"
-                  fontWeight="bold"
-                  color={csatAverage >= 4 ? colors.greenAccent[400] : csatAverage >= 3 ? colors.blueAccent[300] : colors.redAccent[400]}
-                >
-                  {csatAverage.toFixed(2)}
-                </Typography>
-                <Typography variant="h5" color={colors.greenAccent[500]}>
-                  {`${((csatCount / solvedTotal) * 100).toFixed(1)}% coverage`}
-                </Typography>
-                <Typography fontSize="14px" color={colors.grey[300]}>
-                  {`${csatCount} of ${solvedTotal} tickets analyzed`}
-                </Typography>
-              </Box>
-            ) : (
-              <>
-                <Typography variant="h5" fontWeight="600" color={colors.grey[100]} mb="5px">
-                  No data
-                </Typography>
-                <Typography fontSize="14px" color={colors.grey[400]}>
+                  <Typography fontSize={isPortraitMobile ? "10px" : undefined} textAlign="center">
+                    {`${csatCount} of ${solvedTotal} tickets analyzed`}
+                  </Typography>
+                </>
+              ) : (
+                <Typography fontSize={isPortraitMobile ? "10px" : undefined} textAlign="center" sx={{ mt: "50px" }}>
                   No tickets have AI CSAT score in this period
                 </Typography>
-              </>
-            )}
+              )}
+            </Box>
+          </Box>
+
+        {/* AI CSAT Average Score Widget */}
+          <Box
+            gridColumn={isPortraitMobile ? "2" : `span 40`}
+            gridRow={isPortraitMobile ? "4" : "span 3"}
+            backgroundColor={colors.primary[400]}
+            p={isPortraitMobile ? "20px" : "30px"}
+            borderRadius={isPortraitMobile ? "12px" : undefined}
+            boxShadow={isPortraitMobile ? "0 2px 8px rgba(0,0,0,0.2)" : undefined}
+          >
+            <Typography variant={isPortraitMobile ? "h6" : "h5"} fontWeight="600">
+              AI CSAT Average Score
+            </Typography>
+            <Box
+              display="flex"
+              flexDirection="column"
+              alignItems="center"
+              mt={isPortraitMobile ? "15px" : "25px"}
+            >
+              {csatCount > 0 ? (
+                <>
+                  <ProgressCircle
+                    progress={csatAverage / 5}
+                    size={isPortraitMobile ? "100" : "150"}
+                  />
+                  <Typography
+                    variant={isPortraitMobile ? "h6" : "h5"}
+                    color={colors.greenAccent[500]}
+                    sx={{ mt: isPortraitMobile ? "10px" : "15px" }}
+                  >
+                    {csatAverage.toFixed(2)} avg
+                  </Typography>
+                  <Typography fontSize={isPortraitMobile ? "10px" : undefined} textAlign="center">
+                    {`${csatAverage.toFixed(2)} / 5.00`}
+                  </Typography>
+                </>
+              ) : (
+                <Typography fontSize={isPortraitMobile ? "10px" : undefined} textAlign="center" sx={{ mt: "50px" }}>
+                  No tickets have AI CSAT score in this period
+                </Typography>
+              )}
+            </Box>
           </Box>
 
       </Box>
