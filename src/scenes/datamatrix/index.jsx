@@ -369,34 +369,6 @@ const DataMatrix = ({ product }) => {
             </Box>
           </Box>
 
-        {/* Data Grid */} {/* Data Grid */} {/* Data Grid */} {/* Data Grid */} {/* Data Grid */} {/* Data Grid */}
-        {/* Data Grid */} {/* Data Grid */} {/* Data Grid */} {/* Data Grid */} {/* Data Grid */} {/* Data Grid */}
-        {/* Data Grid */} {/* Data Grid */} {/* Data Grid */} {/* Data Grid */} {/* Data Grid */} {/* Data Grid */}
-
-          <Box 
-              gridColumn={isPortraitMobile ? "1 / 3" : "span 80"}
-              gridRow={isPortraitMobile ? "3" : "span 6"}
-              backgroundColor={colors.primary[400]}
-              p={isPortraitMobile ? "10px" : "20px"}
-              overflow="auto"
-              borderRadius={isPortraitMobile ? "12px" : undefined}
-              boxShadow={isPortraitMobile ? "0 2px 8px rgba(0,0,0,0.2)" : undefined}
-              sx={{
-                minHeight: isPortraitMobile ? "400px" : undefined,
-              }}
-              >
-              <DataGrid
-                  rows={dataObject}
-                  columns={columns}
-                  getRowId={(row) => row.ticket_id}
-                  autoHeight={false}  // Set this to false if you want to control the height with grid
-              />
-          </Box>
-
-        {/* Data Grid */} {/* Data Grid */} {/* Data Grid */} {/* Data Grid */} {/* Data Grid */} {/* Data Grid */}
-        {/* Data Grid */} {/* Data Grid */} {/* Data Grid */} {/* Data Grid */} {/* Data Grid */} {/* Data Grid */}
-        {/* Data Grid */} {/* Data Grid */} {/* Data Grid */} {/* Data Grid */} {/* Data Grid */} {/* Data Grid */}
-
         {/* AI-Solved Graphic - CIRCULITO MORADO*/}
           <Box
             gridColumn={isPortraitMobile ? "1" : `span 20`}
@@ -469,8 +441,8 @@ const DataMatrix = ({ product }) => {
 
         {/* AI CSAT Coverage Widget */}
           <Box
-            gridColumn={isPortraitMobile ? "1" : `span 40`}
-            gridRow={isPortraitMobile ? "4" : "span 1"}
+            gridColumn={isPortraitMobile ? "1" : `span 20`}
+            gridRow={isPortraitMobile ? "3" : "span 3"}
             backgroundColor={colors.primary[400]}
             display="flex"
             alignItems="center"
@@ -504,8 +476,8 @@ const DataMatrix = ({ product }) => {
 
         {/* AI CSAT Average Score Widget */}
           <Box
-            gridColumn={isPortraitMobile ? "2" : `span 40`}
-            gridRow={isPortraitMobile ? "4" : "span 1"}
+            gridColumn={isPortraitMobile ? "2" : `span 20`}
+            gridRow={isPortraitMobile ? "3" : "span 3"}
             backgroundColor={colors.primary[400]}
             display="flex"
             alignItems="center"
@@ -536,6 +508,34 @@ const DataMatrix = ({ product }) => {
               </Box>
             )}
           </Box>
+
+        {/* Data Grid */} {/* Data Grid */} {/* Data Grid */} {/* Data Grid */} {/* Data Grid */} {/* Data Grid */}
+        {/* Data Grid */} {/* Data Grid */} {/* Data Grid */} {/* Data Grid */} {/* Data Grid */} {/* Data Grid */}
+        {/* Data Grid */} {/* Data Grid */} {/* Data Grid */} {/* Data Grid */} {/* Data Grid */} {/* Data Grid */}
+
+          <Box 
+              gridColumn={isPortraitMobile ? "1 / 3" : "span 120"}
+              gridRow={isPortraitMobile ? "4" : "span 6"}
+              backgroundColor={colors.primary[400]}
+              p={isPortraitMobile ? "10px" : "20px"}
+              overflow="auto"
+              borderRadius={isPortraitMobile ? "12px" : undefined}
+              boxShadow={isPortraitMobile ? "0 2px 8px rgba(0,0,0,0.2)" : undefined}
+              sx={{
+                minHeight: isPortraitMobile ? "400px" : undefined,
+              }}
+              >
+              <DataGrid
+                  rows={dataObject}
+                  columns={columns}
+                  getRowId={(row) => row.ticket_id}
+                  autoHeight={false}  // Set this to false if you want to control the height with grid
+              />
+          </Box>
+
+        {/* Data Grid */} {/* Data Grid */} {/* Data Grid */} {/* Data Grid */} {/* Data Grid */} {/* Data Grid */}
+        {/* Data Grid */} {/* Data Grid */} {/* Data Grid */} {/* Data Grid */} {/* Data Grid */} {/* Data Grid */}
+        {/* Data Grid */} {/* Data Grid */} {/* Data Grid */} {/* Data Grid */} {/* Data Grid */} {/* Data Grid */}
 
       </Box>
     </Box>
