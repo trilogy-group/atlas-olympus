@@ -6,7 +6,6 @@ import useConfigureGlobals from '../../hooks/useConfigureGlobals';
 import { useNavigate } from "react-router-dom"; 
 import SmartToyRoundedIcon from '@mui/icons-material/SmartToyRounded';
 import TimerOffRoundedIcon from '@mui/icons-material/TimerOffRounded';
-import RepeatOneRoundedIcon from '@mui/icons-material/RepeatOneRounded';
 import ConfirmationNumberRoundedIcon from '@mui/icons-material/ConfirmationNumberRounded';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
@@ -46,13 +45,13 @@ function createSimpleAreaChartData(matrix, bu, product, type, percent = false, e
   const totalsByWeek = {};
 
   filteredData.forEach(row => {
-      const week = parseInt(row[11]);
-      const year = row[12];
+      const week = parseInt(row[13]); // week index updated
+      const year = row[14]; // year index updated
       const weekKey = `${year}-${week}`; // Incluir año en la key para evitar colisiones
-      const buTotal = filteredData.filter(item => parseInt(item[11]) === week && item[12] === year).reduce((sum, item) => sum + parseInt(item[2]), 0);
-      const aiTotal = filteredData.filter(item => parseInt(item[11]) === week && item[12] === year).reduce((sum, item) => sum + parseInt(item[7]), 0);
-      const slaTotal = filteredData.filter(item => parseInt(item[11]) === week && item[12] === year).reduce((sum, item) => sum + parseInt(item[8]), 0);
-      const fcrTotal = filteredData.filter(item => parseInt(item[11]) === week && item[12] === year).reduce((sum, item) => sum + parseInt(item[9]), 0);
+      const buTotal = filteredData.filter(item => parseInt(item[13]) === week && item[14] === year).reduce((sum, item) => sum + parseInt(item[2]), 0);
+      const aiTotal = filteredData.filter(item => parseInt(item[13]) === week && item[14] === year).reduce((sum, item) => sum + parseInt(item[7]), 0);
+      const slaTotal = filteredData.filter(item => parseInt(item[13]) === week && item[14] === year).reduce((sum, item) => sum + parseInt(item[8]), 0);
+      const fcrTotal = filteredData.filter(item => parseInt(item[13]) === week && item[14] === year).reduce((sum, item) => sum + parseInt(item[9]), 0);
 
       let Total = 0;
 
@@ -68,6 +67,21 @@ function createSimpleAreaChartData(matrix, bu, product, type, percent = false, e
           break;
         case "FCR":
           Total = fcrTotal; // Columna para FCR ahora es row[9]
+          break;
+        case "CSAT":
+          // Calculate weighted average CSAT for the week
+          const weekData = filteredData.filter(item => parseInt(item[13]) === week && item[14] === year);
+          let csatSum = 0;
+          let csatCountTotal = 0;
+          weekData.forEach(item => {
+            const avgCsat = parseFloat(item[11]); // avg_csat_score
+            const count = parseInt(item[12]); // csat_count
+            if (!isNaN(avgCsat) && !isNaN(count) && count > 0) {
+              csatSum += avgCsat * count;
+              csatCountTotal += count;
+            }
+          });
+          Total = csatCountTotal > 0 ? csatSum / csatCountTotal : 0;
           break;
         default:
           break;
@@ -133,6 +147,7 @@ const DashboardHistory = ({ bu_subset = "All", vpName = "All", productChosen = "
   const [showPercentageAI, setShowPercentageAI] = useState(false);
   const [showPercentageFCR, setShowPercentageFCR] = useState(false);
   const [showPercentageSLA, setShowPercentageSLA] = useState(false);
+  const [showPercentageCSAT, setShowPercentageCSAT] = useState(false);
   const [excludedItems, setExcludedItems] = useState([]); // Track excluded BUs/products
   const { reloadKey } = useReload();
 
@@ -616,7 +631,7 @@ const DashboardHistory = ({ bu_subset = "All", vpName = "All", productChosen = "
           </Box>
         </Box>
 
-        {/* Simple Area Chart for FCR Tickets */}
+        {/* Simple Area Chart for AI CSAT Score */}
         <Box
           gridColumn={isPortraitMobile ? "2" : `span ${TotalSubAreaChart}`}
           gridRow={isPortraitMobile ? "3" : `span ${TotalSubAreaChartVertical}`}
@@ -641,12 +656,13 @@ const DashboardHistory = ({ bu_subset = "All", vpName = "All", productChosen = "
             mb={isPortraitMobile ? 1 : 0}
             zIndex={10}
           >
-            <Typography variant="body2" sx={{ color: colors.primary[100], marginRight: 1, fontSize: isPortraitMobile ? "10px" : undefined }}>{showPercentageFCR ? `Showing Percentage` : `Showing Volume`}</Typography>
+            <Typography variant="body2" sx={{ color: colors.primary[100], marginRight: 1, fontSize: isPortraitMobile ? "10px" : undefined }}>{showPercentageCSAT ? `Showing Score` : `Showing Score`}</Typography>
             <Switch 
-              checked={showPercentageFCR} 
-              onChange={(e) => setShowPercentageFCR(e.target.checked)} 
+              checked={showPercentageCSAT} 
+              onChange={(e) => setShowPercentageCSAT(e.target.checked)} 
               color="primary"
               size={isPortraitMobile ? "small" : "medium"}
+              disabled={true}
             />
           </Box>
           <Box
@@ -661,14 +677,14 @@ const DashboardHistory = ({ bu_subset = "All", vpName = "All", productChosen = "
               variant={isPortraitMobile ? "h3" : "h2"}
               fontWeight="600"
             >
-              <RepeatOneRoundedIcon
+              <SmartToyRoundedIcon
                 sx={{ color: colors.blueAccent[300], fontSize: isPortraitMobile ? "22px" : "26px", marginRight: "8px" }} 
               />
-              FCR 
+              AI CSAT Score 
             </Typography>
             
             <Typography variant={isPortraitMobile ? "h6" : "h5"} sx={{ color: colors.blueAccent[300] }}>
-              The last 12 weeks
+              The last 12 weeks (avg 1-5)
             </Typography>
           </Box>
 
@@ -681,10 +697,10 @@ const DashboardHistory = ({ bu_subset = "All", vpName = "All", productChosen = "
             }}
           >
             <SimpleAreaChart 
-              key={`fcr-${vpName}-${bu_subset}-${productChosen}-${excludedItems.join(',')}`}
-              data={createSimpleAreaChartData(dataMatrix.filter(row => (isolatedMappedProducts.length > 0) ? isolatedMappedProducts.includes(row[1]) : true), bu_subset, productChosen, "FCR", showPercentageFCR, excludedItems)}
+              key={`csat-${vpName}-${bu_subset}-${productChosen}-${excludedItems.join(',')}`}
+              data={createSimpleAreaChartData(dataMatrix.filter(row => (isolatedMappedProducts.length > 0) ? isolatedMappedProducts.includes(row[1]) : true), bu_subset, productChosen, "CSAT", showPercentageCSAT, excludedItems)}
               colorObject={{ "fill": colors.blueAccent[200], "stroke": colors.blueAccent[900] }}
-              percent={showPercentageFCR}
+              percent={showPercentageCSAT}
             />
           </Box>
         </Box>
