@@ -138,9 +138,37 @@ const DashboardPassive = ({ bu_subset = "All", vpName = "All" }) => {
     const fetchDataAsync = async () => {
       try {
         let data = await performGetTotalsAll(globals);
+        
+        // Validate data structure - if invalid or missing CSAT columns, clear cache and retry
+        if (!data || data === null || !Array.isArray(data) || data.length === 0) {
+          console.warn('[DashboardPassive] Invalid or null data received, clearing cache and retrying...');
+          const storageKey = `performGetTotalsAll-${globals.SHEET_ID}`;
+          localStorage.removeItem(storageKey);
+          
+          // Retry fetch without cache
+          data = await performGetTotalsAll(globals);
+          
+          if (!data || data === null) {
+            console.error('[DashboardPassive] Data is still null after retry, setting empty array');
+            setDataMatrix([]);
+            return;
+          }
+        }
+        
+        // Validate that data has expected CSAT columns (should be 20 columns now)
+        if (data.length > 0 && data[0].length < 20) {
+          console.warn('[DashboardPassive] Data structure is outdated (missing CSAT columns), clearing cache and retrying...');
+          const storageKey = `performGetTotalsAll-${globals.SHEET_ID}`;
+          localStorage.removeItem(storageKey);
+          
+          // Retry fetch
+          data = await performGetTotalsAll(globals);
+        }
+        
         setDataMatrix(data);
       } catch (error) {
         console.error("Error fetching data:", error);
+        setDataMatrix([]);
       }
     };
 

@@ -6,7 +6,10 @@ import useConfigureGlobals from '../../hooks/useConfigureGlobals';
 import { useNavigate } from "react-router-dom"; 
 import SmartToyRoundedIcon from '@mui/icons-material/SmartToyRounded';
 import TimerOffRoundedIcon from '@mui/icons-material/TimerOffRounded';
+import RepeatOneRoundedIcon from '@mui/icons-material/RepeatOneRounded';
 import ConfirmationNumberRoundedIcon from '@mui/icons-material/ConfirmationNumberRounded';
+import SentimentSatisfiedAltIcon from '@mui/icons-material/SentimentSatisfiedAlt';
+import AssessmentIcon from '@mui/icons-material/Assessment';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { useReload } from "../../context/ReloadContext";
@@ -45,13 +48,13 @@ function createSimpleAreaChartData(matrix, bu, product, type, percent = false, e
   const totalsByWeek = {};
 
   filteredData.forEach(row => {
-      const week = parseInt(row[13]); // week index updated
-      const year = row[14]; // year index updated
+      const week = parseInt(row[11]);
+      const year = row[12];
       const weekKey = `${year}-${week}`; // Incluir año en la key para evitar colisiones
-      const buTotal = filteredData.filter(item => parseInt(item[13]) === week && item[14] === year).reduce((sum, item) => sum + parseInt(item[2]), 0);
-      const aiTotal = filteredData.filter(item => parseInt(item[13]) === week && item[14] === year).reduce((sum, item) => sum + parseInt(item[7]), 0);
-      const slaTotal = filteredData.filter(item => parseInt(item[13]) === week && item[14] === year).reduce((sum, item) => sum + parseInt(item[8]), 0);
-      const fcrTotal = filteredData.filter(item => parseInt(item[13]) === week && item[14] === year).reduce((sum, item) => sum + parseInt(item[9]), 0);
+      const buTotal = filteredData.filter(item => parseInt(item[11]) === week && item[12] === year).reduce((sum, item) => sum + parseInt(item[2]), 0);
+      const aiTotal = filteredData.filter(item => parseInt(item[11]) === week && item[12] === year).reduce((sum, item) => sum + parseInt(item[7]), 0);
+      const slaTotal = filteredData.filter(item => parseInt(item[11]) === week && item[12] === year).reduce((sum, item) => sum + parseInt(item[8]), 0);
+      const fcrTotal = filteredData.filter(item => parseInt(item[11]) === week && item[12] === year).reduce((sum, item) => sum + parseInt(item[9]), 0);
 
       let Total = 0;
 
@@ -70,18 +73,24 @@ function createSimpleAreaChartData(matrix, bu, product, type, percent = false, e
           break;
         case "CSAT":
           // Calculate weighted average CSAT for the week
-          const weekData = filteredData.filter(item => parseInt(item[13]) === week && item[14] === year);
+          const weekData = filteredData.filter(item => parseInt(item[11]) === week && item[12] === year);
           let csatSum = 0;
           let csatCountTotal = 0;
           weekData.forEach(item => {
-            const avgCsat = parseFloat(item[11]); // avg_csat_score
-            const count = parseInt(item[12]); // csat_count
+            const avgCsat = parseFloat(item[14]); // ai_csat_score_avg at position 14
+            const count = parseInt(item[13]); // ai_csat_score (count) at position 13
             if (!isNaN(avgCsat) && !isNaN(count) && count > 0) {
               csatSum += avgCsat * count;
               csatCountTotal += count;
             }
           });
           Total = csatCountTotal > 0 ? csatSum / csatCountTotal : 0;
+          break;
+        case "CSATCount":
+          // Count of tickets with CSAT score
+          Total = filteredData
+            .filter(item => parseInt(item[11]) === week && item[12] === year)
+            .reduce((sum, item) => sum + parseInt(item[13] || 0), 0);
           break;
         default:
           break;
@@ -106,6 +115,11 @@ function createSimpleAreaChartData(matrix, bu, product, type, percent = false, e
                     })
                     .map(weekKey => {
                       let percentage = (percent) ? (totalsByWeek[weekKey].total / totalsByWeek[weekKey].fullTotal * 100).toFixed(2) : totalsByWeek[weekKey].total;
+                      
+                      // Format CSAT scores to 2 decimals
+                      if (type === "CSAT" && !percent) {
+                        percentage = Number(percentage).toFixed(2);
+                      }
 
                       // Extraer solo el número de semana de la key "2026-1"
                       const weekNumber = weekKey.split('-')[1].padStart(2, '0');
@@ -143,13 +157,14 @@ const DashboardHistory = ({ bu_subset = "All", vpName = "All", productChosen = "
   const isPortraitMobile = isMobile && isPortrait;
 
   let [dataMatrix, setDataMatrix] = useState([]);
-  const [showPercentageTotal, setShowPercentageTotal] = useState(false);
+  const [showPercentageTotal] = useState(false);
   const [showPercentageAI, setShowPercentageAI] = useState(false);
   const [showPercentageFCR, setShowPercentageFCR] = useState(false);
   const [showPercentageSLA, setShowPercentageSLA] = useState(false);
-  const [showPercentageCSAT, setShowPercentageCSAT] = useState(false);
+  const [showPercentageCSAT] = useState(false);
+  const [showPercentageCSATCount, setShowPercentageCSATCount] = useState(false);
   const [excludedItems, setExcludedItems] = useState([]); // Track excluded BUs/products
-  const { reloadKey } = useReload();
+  const { reloadKey} = useReload();
 
   // Toggle visibility of a BU or product
   const toggleItemVisibility = (itemName) => {
@@ -181,9 +196,35 @@ const DashboardHistory = ({ bu_subset = "All", vpName = "All", productChosen = "
     const fetchDataAsync = async () => {
       try {
         let data = await performGetHistory(globals);
+        
+        // Validate data structure - if invalid or missing CSAT columns, clear cache and retry
+        if (!data || data === null || !Array.isArray(data) || data.length === 0) {
+          console.warn('[DashboardHistory] Invalid or null data received, clearing cache and retrying...');
+          localStorage.removeItem('history-data');
+          
+          // Retry fetch without cache
+          data = await performGetHistory(globals);
+          
+          if (!data || data === null) {
+            console.error('[DashboardHistory] Data is still null after retry, setting empty array');
+            setDataMatrix([]);
+            return;
+          }
+        }
+        
+        // Validate that data has expected CSAT columns (should have avg_csat_score and csat_count)
+        if (data.length > 0 && data[0].length < 15) {
+          console.warn('[DashboardHistory] Data structure is outdated (missing CSAT columns), clearing cache and retrying...');
+          localStorage.removeItem('history-data');
+          
+          // Retry fetch
+          data = await performGetHistory(globals);
+        }
+        
         setDataMatrix(data);
       } catch (error) {
         console.error("Error fetching data:", error);
+        setDataMatrix([]);
       } 
     };
 
@@ -633,7 +674,7 @@ const DashboardHistory = ({ bu_subset = "All", vpName = "All", productChosen = "
 
         {/* Simple Area Chart for AI CSAT Score */}
         <Box
-          gridColumn={isPortraitMobile ? "2" : `span ${TotalSubAreaChart}`}
+          gridColumn={isPortraitMobile ? "1" : `span ${TotalSubAreaChart}`}
           gridRow={isPortraitMobile ? "3" : `span ${TotalSubAreaChartVertical}`}
           backgroundColor={colors.primary[400]}
           display="flex"
@@ -656,14 +697,7 @@ const DashboardHistory = ({ bu_subset = "All", vpName = "All", productChosen = "
             mb={isPortraitMobile ? 1 : 0}
             zIndex={10}
           >
-            <Typography variant="body2" sx={{ color: colors.primary[100], marginRight: 1, fontSize: isPortraitMobile ? "10px" : undefined }}>{showPercentageCSAT ? `Showing Score` : `Showing Score`}</Typography>
-            <Switch 
-              checked={showPercentageCSAT} 
-              onChange={(e) => setShowPercentageCSAT(e.target.checked)} 
-              color="primary"
-              size={isPortraitMobile ? "small" : "medium"}
-              disabled={true}
-            />
+            <Typography variant="body2" sx={{ color: colors.primary[100], marginRight: 1, fontSize: isPortraitMobile ? "10px" : undefined }}>Score (1-5)</Typography>
           </Box>
           <Box
             position={isPortraitMobile ? "relative" : "absolute"}
@@ -677,7 +711,7 @@ const DashboardHistory = ({ bu_subset = "All", vpName = "All", productChosen = "
               variant={isPortraitMobile ? "h3" : "h2"}
               fontWeight="600"
             >
-              <SmartToyRoundedIcon
+              <SentimentSatisfiedAltIcon
                 sx={{ color: colors.blueAccent[300], fontSize: isPortraitMobile ? "22px" : "26px", marginRight: "8px" }} 
               />
               AI CSAT Score 
@@ -705,10 +739,10 @@ const DashboardHistory = ({ bu_subset = "All", vpName = "All", productChosen = "
           </Box>
         </Box>
 
-        {/* Simple Area Chart for SLA Failed Tickets */}
+        {/* Simple Area Chart for SLA Compliance */}
         <Box
           gridColumn={isPortraitMobile ? "2" : `span ${TotalSubAreaChart}`}
-          gridRow={isPortraitMobile ? "4" : `span ${TotalSubAreaChartVertical}`}
+          gridRow={isPortraitMobile ? "3" : `span ${TotalSubAreaChartVertical}`}
           backgroundColor={colors.primary[400]}
           display="flex"
           flexDirection={isPortraitMobile ? "column" : undefined}
@@ -778,48 +812,151 @@ const DashboardHistory = ({ bu_subset = "All", vpName = "All", productChosen = "
           </Box>
         </Box>
 
-        {/* HighChart for SLA Failed Tickets */}
-        {/* <Box
-          gridColumn={`span ${120}`}
-          gridRow={`span ${TotalSubAreaChartVertical}`}
+        {/* Simple Area Chart for FCR - Lower Level */}
+        <Box
+          gridColumn={isPortraitMobile ? "1" : `span ${TotalSubAreaChart}`}
+          gridRow={isPortraitMobile ? "5" : `span ${TotalSubAreaChartVertical}`}
           backgroundColor={colors.primary[400]}
           display="flex"
+          flexDirection={isPortraitMobile ? "column" : undefined}
           alignItems="center"
-          justifyContent="center"
+          justifyContent={isPortraitMobile ? "flex-start" : "center"}
           position="relative" 
+          borderRadius={isPortraitMobile ? "12px" : undefined}
+          minHeight={isPortraitMobile ? "350px" : undefined}
+          padding={isPortraitMobile ? "10px" : undefined}
         >
-          <Box position="absolute" top={10} right={10} display="flex" alignItems="center">
-            <Typography variant="body2" sx={{ color: colors.primary[100], marginRight: 1 }}>{showPercentageSLA ? `Showing Percentage` : `Showing Volume`}</Typography>
+          <Box 
+            position={isPortraitMobile ? "relative" : "absolute"} 
+            top={isPortraitMobile ? 0 : 10} 
+            right={isPortraitMobile ? 0 : 10} 
+            display="flex" 
+            alignItems="center"
+            justifyContent={isPortraitMobile ? "flex-end" : undefined}
+            width={isPortraitMobile ? "100%" : undefined}
+            mb={isPortraitMobile ? 1 : 0}
+            zIndex={10}
+          >
+            <Typography variant="body2" sx={{ color: colors.primary[100], marginRight: 1, fontSize: isPortraitMobile ? "10px" : undefined }}>{showPercentageFCR ? `Showing Percentage` : `Showing Volume`}</Typography>
             <Switch 
-              checked={showPercentageSLA} 
-              onChange={(e) => setShowPercentageSLA(e.target.checked)} 
-              color="primary" 
+              checked={showPercentageFCR} 
+              onChange={(e) => setShowPercentageFCR(e.target.checked)} 
+              color="primary"
+              size={isPortraitMobile ? "small" : "medium"}
             />
           </Box>
           <Box
-            position="absolute"
-            top={10}
-            left={10}
+            position={isPortraitMobile ? "relative" : "absolute"}
+            top={isPortraitMobile ? 0 : 10}
+            left={isPortraitMobile ? 0 : 10}
             padding="10px" 
+            width={isPortraitMobile ? "100%" : undefined}
           >
             <Typography 
               display="flex" 
-              variant="h2" 
+              variant={isPortraitMobile ? "h3" : "h2"}
               fontWeight="600"
             >
-              <TimerOffRoundedIcon
-                sx={{ color: colors.greenAccent[300], fontSize: "26px", marginRight: "8px" }} 
+              <RepeatOneRoundedIcon
+                sx={{ color: colors.greenAccent[300], fontSize: isPortraitMobile ? "22px" : "26px", marginRight: "8px" }} 
               />
-              SLA Compliance
+              FCR 
             </Typography>
             
-            <Typography variant="h5" sx={{ color: colors.greenAccent[300] }}>
+            <Typography variant={isPortraitMobile ? "h6" : "h5"} sx={{ color: colors.greenAccent[300] }}>
               The last 12 weeks
             </Typography>
           </Box>
 
-          <HCDashboardsSync />
-        </Box> */}
+          <Box
+            sx={{ 
+              width: '100%', 
+              height: isPortraitMobile ? '250px' : '100%', 
+              marginTop: isPortraitMobile ? '60px' : '30%',
+              flexGrow: isPortraitMobile ? 1 : undefined
+            }}
+          >
+            <SimpleAreaChart 
+              key={`fcr-${vpName}-${bu_subset}-${productChosen}-${excludedItems.join(',')}`}
+              data={createSimpleAreaChartData(dataMatrix.filter(row => (isolatedMappedProducts.length > 0) ? isolatedMappedProducts.includes(row[1]) : true), bu_subset, productChosen, "FCR", showPercentageFCR, excludedItems)}
+              colorObject={{ "fill": colors.greenAccent[200], "stroke": colors.greenAccent[900] }}
+              percent={showPercentageFCR}
+            />
+          </Box>
+        </Box>
+
+        {/* Simple Area Chart for CSAT Coverage (Count) - Lower Level */}
+        <Box
+          gridColumn={isPortraitMobile ? "2" : `span ${TotalSubAreaChart}`}
+          gridRow={isPortraitMobile ? "5" : `span ${TotalSubAreaChartVertical}`}
+          backgroundColor={colors.primary[400]}
+          display="flex"
+          flexDirection={isPortraitMobile ? "column" : undefined}
+          alignItems="center"
+          justifyContent={isPortraitMobile ? "flex-start" : "center"}
+          position="relative" 
+          borderRadius={isPortraitMobile ? "12px" : undefined}
+          minHeight={isPortraitMobile ? "350px" : undefined}
+          padding={isPortraitMobile ? "10px" : undefined}
+        >
+          <Box 
+            position={isPortraitMobile ? "relative" : "absolute"} 
+            top={isPortraitMobile ? 0 : 10} 
+            right={isPortraitMobile ? 0 : 10} 
+            display="flex" 
+            alignItems="center"
+            justifyContent={isPortraitMobile ? "flex-end" : undefined}
+            width={isPortraitMobile ? "100%" : undefined}
+            mb={isPortraitMobile ? 1 : 0}
+            zIndex={10}
+          >
+            <Typography variant="body2" sx={{ color: colors.primary[100], marginRight: 1, fontSize: isPortraitMobile ? "10px" : undefined }}>{showPercentageCSATCount ? `Showing Percentage` : `Showing Volume`}</Typography>
+            <Switch 
+              checked={showPercentageCSATCount} 
+              onChange={(e) => setShowPercentageCSATCount(e.target.checked)} 
+              color="primary"
+              size={isPortraitMobile ? "small" : "medium"}
+            />
+          </Box>
+          <Box
+            position={isPortraitMobile ? "relative" : "absolute"}
+            top={isPortraitMobile ? 0 : 10}
+            left={isPortraitMobile ? 0 : 10}
+            padding="10px" 
+            width={isPortraitMobile ? "100%" : undefined}
+          >
+            <Typography 
+              display="flex" 
+              variant={isPortraitMobile ? "h3" : "h2"}
+              fontWeight="600"
+            >
+              <AssessmentIcon
+                sx={{ color: colors.greenAccent[300], fontSize: isPortraitMobile ? "22px" : "26px", marginRight: "8px" }} 
+              />
+              CSAT Coverage 
+            </Typography>
+            
+            <Typography variant={isPortraitMobile ? "h6" : "h5"} sx={{ color: colors.greenAccent[300] }}>
+              Tickets analyzed (last 12 weeks)
+            </Typography>
+          </Box>
+
+          <Box
+            sx={{ 
+              width: '100%', 
+              height: isPortraitMobile ? '250px' : '100%', 
+              marginTop: isPortraitMobile ? '60px' : '30%',
+              flexGrow: isPortraitMobile ? 1 : undefined
+            }}
+          >
+            <SimpleAreaChart 
+              key={`csat-count-${vpName}-${bu_subset}-${productChosen}-${excludedItems.join(',')}`}
+              data={createSimpleAreaChartData(dataMatrix.filter(row => (isolatedMappedProducts.length > 0) ? isolatedMappedProducts.includes(row[1]) : true), bu_subset, productChosen, "CSATCount", showPercentageCSATCount, excludedItems)}
+              colorObject={{ "fill": colors.greenAccent[200], "stroke": colors.greenAccent[900] }}
+              percent={showPercentageCSATCount}
+            />
+          </Box>
+        </Box>
 
       </Box>
     </Box>

@@ -229,13 +229,13 @@ const DataMatrix = ({ product }) => {
         ),
         renderCell: (params) => (
           <div style={{ 
-            color: params.value && params.value !== '' 
+            color: params.value && params.value !== '' && params.value !== 'null' && params.value !== 'undefined'
               ? (Number(params.value) >= 4 ? colors.greenAccent[400] : Number(params.value) >= 3 ? colors.blueAccent[300] : colors.redAccent[400])
               : colors.grey[500], 
             textAlign: "center",
-            fontWeight: params.value && params.value !== '' ? "bold" : "normal"
+            fontWeight: params.value && params.value !== '' && params.value !== 'null' ? "bold" : "normal"
           }}>
-            {params.value && params.value !== '' ? params.value : '-'}
+            {params.value && params.value !== '' && params.value !== 'null' && params.value !== 'undefined' ? params.value : '-'}
           </div>
         )
       },
@@ -251,7 +251,7 @@ const DataMatrix = ({ product }) => {
         ),
         renderCell: (params) => (
           <div style={{ 
-            color: params.value && params.value !== '' ? colors.grey[100] : colors.grey[500], 
+            color: params.value && params.value !== '' && params.value !== 'null' && params.value !== 'undefined' ? colors.grey[100] : colors.grey[500], 
             textAlign: "left",
             fontSize: "11px",
             lineHeight: "1.4",
@@ -264,7 +264,7 @@ const DataMatrix = ({ product }) => {
             WebkitBoxOrient: "vertical",
             maxHeight: "52px"
           }}>
-            {params.value && params.value !== '' ? params.value : '-'}
+            {params.value && params.value !== '' && params.value !== 'null' && params.value !== 'undefined' ? params.value : '-'}
           </div>
         )
       },
@@ -302,11 +302,22 @@ const DataMatrix = ({ product }) => {
   slaTotalPercentage = slaTotal / solvedTotal ;
 
   // Calculate CSAT average (only for tickets with ai_csat_score)
-  const ticketsWithCsat = dataObject.filter(row => row.ai_csat_score && row.ai_csat_score !== '');
+  const ticketsWithCsat = dataObject.filter(row => 
+    row.ai_csat_score && 
+    row.ai_csat_score !== '' && 
+    row.ai_csat_score !== 'null' && 
+    row.ai_csat_score !== 'undefined' &&
+    !isNaN(Number(row.ai_csat_score))
+  );
   csatCount = ticketsWithCsat.length;
   if (csatCount > 0) {
     csatTotal = ticketsWithCsat.reduce((sum, row) => sum + Number(row.ai_csat_score), 0);
     csatAverage = csatTotal / csatCount;
+  }
+  
+  // Debug log
+  if (dataObject.length > 0) {
+    console.log(`[DataMatrix] Product: ${product}, Total: ${solvedTotal}, CSAT Count: ${csatCount}, CSAT Avg: ${csatAverage}`);
   }
   
   return (
