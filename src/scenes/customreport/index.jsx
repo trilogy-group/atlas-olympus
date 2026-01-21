@@ -303,6 +303,8 @@ const CustomReportForm = () => {
      "Tickets table - underEvaluationBy", "Tickets table - updatedAt", "Tickets table - viaTicketSharing", "Tickets table - weekStartDate",
      "Tickets table - xoEmailAddress", 
 
+     "PTA table - ai_csat_score", "PTA table - ai_csat_justification",
+
      "Products table - alpProductName", "Products table - amazonQueueId", "Products table - answerbot", 
      "Products table - brand", "Products table - contactEmails", "Products table - createdAt", "Products table - csProductId", 
      "Products table - deletedAt", "Products table - focus", "Products table - group", "Products table - id", "Products table - inpitr", 
@@ -631,7 +633,7 @@ const CustomReportForm = () => {
       }
 
     setPayloadData(payload);
-    // console.log(`Payload saved: ${JSON.stringify(payload, null, 2)} `);
+    console.log(`[CUSTOM REPORT] Payload enviado al Lambda:`, JSON.stringify(payload, null, 2));
 
       try {
         const url = "https://3krfichmtib74nxknsa6nw6hfq0wfdhs.lambda-url.us-east-1.on.aws/" //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
