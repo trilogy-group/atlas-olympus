@@ -16,6 +16,7 @@ import ManageAccountsRoundedIcon from '@mui/icons-material/ManageAccountsRounded
 import AnalyticsIcon from '@mui/icons-material/Analytics';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
 import DescriptionIcon from '@mui/icons-material/Description';
+import TimelineOutlinedIcon from '@mui/icons-material/TimelineOutlined';
 
 import { fetchUsers } from "../../data/fetchData";
 import { useReload } from "../../context/ReloadContext";
@@ -450,13 +451,14 @@ const SidebarX = () => {
                             </Box>
                             {isToolsExpanded && (
                                 <>
-                                    {/* <Item
+                                    <Item
                                         title="Escalations Report"
                                         to="/escalationsreport"
                                         icon={<TimelineOutlinedIcon />}
                                         selected={selected}
                                         setSelected={setSelected}
-                                    /> */}
+                                        onMobileClick={handleMobileMenuClick}
+                                    />
                                      <Item
                                         title="Custom Report"
                                         to="/customreport"

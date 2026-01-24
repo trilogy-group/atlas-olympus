@@ -304,6 +304,13 @@ const CustomReportForm = () => {
      "Tickets table - xoEmailAddress", 
 
      "PTA table - ai_csat_score", "PTA table - ai_csat_justification",
+     "PTA table - source", "PTA table - is_voiceflow_escalated", "PTA table - is_agent_chat",
+     "PTA table - agent_chat_missed", "PTA table - intent", "PTA table - is_atlas_attempt",
+     "PTA table - is_atlas_involvement", "PTA table - automation_tag", "PTA table - is_automated",
+     "PTA table - interactions", "PTA table - is_ai_involvement", "PTA table - is_voicebot_quality_issue",
+     "PTA table - has_nabu_qc_fail", "PTA table - is_atlas_quality_issue", "PTA table - is_custom_automation_failure",
+     "PTA table - is_intent_capture_failure", "PTA table - analysis_creation_date", "PTA table - kbas",
+     "PTA table - cu_chulainn_package", "PTA table - interactions_embedding",
 
      "Products table - alpProductName", "Products table - amazonQueueId", "Products table - answerbot", 
      "Products table - brand", "Products table - contactEmails", "Products table - createdAt", "Products table - csProductId", 
@@ -1779,49 +1786,68 @@ const CustomReportForm = () => {
 
                 {/*- FIELDS -*/}
                 <Grid container spacing={3} alignItems="center">
-                  <Grid item xs={12} md={4}>
-                    <TextField
-                      select
-                      fullWidth
-                      label={index === 0 ? "Ticket" : index === 1 ? "Subject" : "Name"}
-                      variant="outlined"
-                      value={field.name}
-                      onChange={(e) => handleFieldChange(index, "name", e.target.value)}
-                      error={field.errors?.name || false}
-                      disabled={isMandatory}
-                      sx={{
-                        ...getTextFieldStyles(colors),
-                        "& .MuiOutlinedInput-root": {
-                          "& fieldset": {
-                            borderColor: isMandatory
-                              ? colors.primary[300]
-                              : field.errors?.name
-                              ? colors.redAccent[400]
-                              : colors.greenAccent[100],
+                  <Grid item xs={12} md={(field.name === "PTA table - interactions" || field.name === "PTA table - interactions_embedding") ? 6 : 4}>
+                    <Box sx={{ display: "flex", alignItems: "flex-start", gap: "8px" }}>
+                      <TextField
+                        select
+                        fullWidth
+                        label={index === 0 ? "Ticket" : index === 1 ? "Subject" : "Name"}
+                        variant="outlined"
+                        value={field.name}
+                        onChange={(e) => handleFieldChange(index, "name", e.target.value)}
+                        error={field.errors?.name || false}
+                        disabled={isMandatory}
+                        sx={{
+                          ...getTextFieldStyles(colors),
+                          "& .MuiOutlinedInput-root": {
+                            "& fieldset": {
+                              borderColor: isMandatory
+                                ? colors.primary[300]
+                                : field.errors?.name
+                                ? colors.redAccent[400]
+                                : colors.greenAccent[100],
+                            },
+                            "&:hover fieldset": {
+                              borderColor: isMandatory
+                                ? colors.primary[300]
+                                : field.errors?.name
+                                ? colors.redAccent[400]
+                                : colors.greenAccent[300],
+                            },
+                            "&.Mui-focused fieldset": {
+                              borderColor: isMandatory
+                                ? colors.primary[300]
+                                : field.errors?.name
+                                ? colors.redAccent[400]
+                                : colors.greenAccent[400],
+                            },
                           },
-                          "&:hover fieldset": {
-                            borderColor: isMandatory
-                              ? colors.primary[300]
-                              : field.errors?.name
-                              ? colors.redAccent[400]
-                              : colors.greenAccent[300],
-                          },
-                          "&.Mui-focused fieldset": {
-                            borderColor: isMandatory
-                              ? colors.primary[300]
-                              : field.errors?.name
-                              ? colors.redAccent[400]
-                              : colors.greenAccent[400],
-                          },
-                        },
-                      }}
-                    >
-                      {defaultFields.map((option) => (
-                        <MenuItem key={option} value={option}>
-                          {option}
-                        </MenuItem>
-                      ))}
-                    </TextField>
+                        }}
+                      >
+                        {defaultFields.map((option) => (
+                          <MenuItem key={option} value={option}>
+                            {option}
+                          </MenuItem>
+                        ))}
+                      </TextField>
+                      
+                      {/* Warning for large data fields */}
+                      {(field.name === "PTA table - interactions" || field.name === "PTA table - interactions_embedding") && (
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            color: colors.redAccent[400],
+                            fontStyle: "italic",
+                            fontSize: "0.75rem",
+                            marginTop: "14px",
+                            whiteSpace: "nowrap",
+                            flexShrink: 0,
+                          }}
+                        >
+                          ⚠️ Large data
+                        </Typography>
+                      )}
+                    </Box>
                   </Grid>
 
                   {field.name === "Custom" && (

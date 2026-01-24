@@ -289,34 +289,33 @@ const DataMatrix = ({ product }) => {
   let csatCount = 0;
   let csatAverage = 0;
 
-  solvedTotal = dataObject.length;
-  solvedTotalPercentage = solvedTotal / solvedTotal;
+  if (dataMatrix && dataMatrix.length !== 0 && !isNaN(dataMatrix.length) && dataObject.length > 0) {
+    solvedTotal = dataObject.length;
+    solvedTotalPercentage = solvedTotal / solvedTotal;
 
-  fcrTotal = dataObject.reduce((sum, row) => sum + Number(row.fcr), 0);
-  fcrTotalPercentage = fcrTotal / solvedTotal ;
+    fcrTotal = dataObject.reduce((sum, row) => sum + Number(row.fcr), 0);
+    fcrTotalPercentage = fcrTotal / solvedTotal ;
 
-  aiTotal = dataObject.reduce((sum, row) => sum + Number(row.ai_tags), 0);
-  aiTotalPercentage = aiTotal / solvedTotal ;
+    aiTotal = dataObject.reduce((sum, row) => sum + Number(row.ai_tags), 0);
+    aiTotalPercentage = aiTotal / solvedTotal ;
 
-  slaTotal = dataObject.reduce((sum, row) => sum + Number(row.sla), 0);
-  slaTotalPercentage = slaTotal / solvedTotal ;
+    slaTotal = dataObject.reduce((sum, row) => sum + Number(row.sla), 0);
+    slaTotalPercentage = slaTotal / solvedTotal ;
 
-  // Calculate CSAT average (only for tickets with ai_csat_score)
-  const ticketsWithCsat = dataObject.filter(row => 
-    row.ai_csat_score && 
-    row.ai_csat_score !== '' && 
-    row.ai_csat_score !== 'null' && 
-    row.ai_csat_score !== 'undefined' &&
-    !isNaN(Number(row.ai_csat_score))
-  );
-  csatCount = ticketsWithCsat.length;
-  if (csatCount > 0) {
-    csatTotal = ticketsWithCsat.reduce((sum, row) => sum + Number(row.ai_csat_score), 0);
-    csatAverage = csatTotal / csatCount;
-  }
-  
-  // Debug log
-  if (dataObject.length > 0) {
+    // Calculate CSAT average (only for tickets with ai_csat_score)
+    const ticketsWithCsat = dataObject.filter(row => 
+      row.ai_csat_score && 
+      row.ai_csat_score !== '' && 
+      row.ai_csat_score !== 'null' && 
+      row.ai_csat_score !== 'undefined' &&
+      !isNaN(Number(row.ai_csat_score))
+    );
+    csatCount = ticketsWithCsat.length;
+    if (csatCount > 0) {
+      csatTotal = ticketsWithCsat.reduce((sum, row) => sum + Number(row.ai_csat_score), 0);
+      csatAverage = csatTotal / csatCount;
+    }
+    
     console.log(`[DataMatrix] Product: ${product}, Total: ${solvedTotal}, CSAT Count: ${csatCount}, CSAT Avg: ${csatAverage}`);
   }
   

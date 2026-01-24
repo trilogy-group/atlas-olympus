@@ -116,9 +116,15 @@ function createSimpleAreaChartData(matrix, bu, product, type, percent = false, e
                     .map(weekKey => {
                       let percentage = (percent) ? (totalsByWeek[weekKey].total / totalsByWeek[weekKey].fullTotal * 100).toFixed(2) : totalsByWeek[weekKey].total;
                       
-                      // Format CSAT scores to 2 decimals
-                      if (type === "CSAT" && !percent) {
-                        percentage = Number(percentage).toFixed(2);
+                      // Format CSAT scores
+                      if (type === "CSAT") {
+                        if (percent) {
+                          // Convert score (0-5) to percentage (0-100%)
+                          percentage = ((Number(totalsByWeek[weekKey].total) / 5) * 100).toFixed(2);
+                        } else {
+                          // Show score with 2 decimals
+                          percentage = Number(totalsByWeek[weekKey].total).toFixed(2);
+                        }
                       }
 
                       // Extraer solo el número de semana de la key "2026-1"
@@ -126,7 +132,7 @@ function createSimpleAreaChartData(matrix, bu, product, type, percent = false, e
 
                       return {
                         Week: `Week ${weekNumber}`, // Mostrar solo el número de la semana
-                        Total: percentage
+                        Total: Number(percentage)
                       };
                     });
 
@@ -161,7 +167,7 @@ const DashboardHistory = ({ bu_subset = "All", vpName = "All", productChosen = "
   const [showPercentageAI, setShowPercentageAI] = useState(false);
   const [showPercentageFCR, setShowPercentageFCR] = useState(false);
   const [showPercentageSLA, setShowPercentageSLA] = useState(false);
-  const [showPercentageCSAT] = useState(false);
+  const [showPercentageCSAT, setShowPercentageCSAT] = useState(false);
   const [showPercentageCSATCount, setShowPercentageCSATCount] = useState(false);
   const [excludedItems, setExcludedItems] = useState([]); // Track excluded BUs/products
   const { reloadKey} = useReload();
@@ -291,7 +297,7 @@ const DashboardHistory = ({ bu_subset = "All", vpName = "All", productChosen = "
         {/* Left Pannel Statistics */}
         <Box
           gridColumn={isPortraitMobile ? "1" : `span ${20}`}
-          gridRow={isPortraitMobile ? "1 / span 4" : `span ${8}`}
+          gridRow={isPortraitMobile ? "1 / span 4" : `1 / 13`}
           backgroundColor={colors.primary[400]}
           overflow="auto"
           borderRadius={isPortraitMobile ? "12px" : undefined}
@@ -697,7 +703,13 @@ const DashboardHistory = ({ bu_subset = "All", vpName = "All", productChosen = "
             mb={isPortraitMobile ? 1 : 0}
             zIndex={10}
           >
-            <Typography variant="body2" sx={{ color: colors.primary[100], marginRight: 1, fontSize: isPortraitMobile ? "10px" : undefined }}>Score (1-5)</Typography>
+            <Typography variant="body2" sx={{ color: colors.primary[100], marginRight: 1, fontSize: isPortraitMobile ? "10px" : undefined }}>{showPercentageCSAT ? `Showing Percentage` : `Showing Score`}</Typography>
+            <Switch 
+              checked={showPercentageCSAT} 
+              onChange={(e) => setShowPercentageCSAT(e.target.checked)} 
+              color="primary"
+              size={isPortraitMobile ? "small" : "medium"}
+            />
           </Box>
           <Box
             position={isPortraitMobile ? "relative" : "absolute"}
@@ -718,7 +730,7 @@ const DashboardHistory = ({ bu_subset = "All", vpName = "All", productChosen = "
             </Typography>
             
             <Typography variant={isPortraitMobile ? "h6" : "h5"} sx={{ color: colors.blueAccent[300] }}>
-              The last 12 weeks (avg 1-5)
+              The last 12 weeks
             </Typography>
           </Box>
 
@@ -735,6 +747,7 @@ const DashboardHistory = ({ bu_subset = "All", vpName = "All", productChosen = "
               data={createSimpleAreaChartData(dataMatrix.filter(row => (isolatedMappedProducts.length > 0) ? isolatedMappedProducts.includes(row[1]) : true), bu_subset, productChosen, "CSAT", showPercentageCSAT, excludedItems)}
               colorObject={{ "fill": colors.blueAccent[200], "stroke": colors.blueAccent[900] }}
               percent={showPercentageCSAT}
+              unit="Points"
             />
           </Box>
         </Box>
@@ -812,82 +825,9 @@ const DashboardHistory = ({ bu_subset = "All", vpName = "All", productChosen = "
           </Box>
         </Box>
 
-        {/* Simple Area Chart for FCR - Lower Level */}
+        {/* Simple Area Chart for CSAT Coverage (Count) - Lower Level Left */}
         <Box
           gridColumn={isPortraitMobile ? "1" : `span ${TotalSubAreaChart}`}
-          gridRow={isPortraitMobile ? "5" : `span ${TotalSubAreaChartVertical}`}
-          backgroundColor={colors.primary[400]}
-          display="flex"
-          flexDirection={isPortraitMobile ? "column" : undefined}
-          alignItems="center"
-          justifyContent={isPortraitMobile ? "flex-start" : "center"}
-          position="relative" 
-          borderRadius={isPortraitMobile ? "12px" : undefined}
-          minHeight={isPortraitMobile ? "350px" : undefined}
-          padding={isPortraitMobile ? "10px" : undefined}
-        >
-          <Box 
-            position={isPortraitMobile ? "relative" : "absolute"} 
-            top={isPortraitMobile ? 0 : 10} 
-            right={isPortraitMobile ? 0 : 10} 
-            display="flex" 
-            alignItems="center"
-            justifyContent={isPortraitMobile ? "flex-end" : undefined}
-            width={isPortraitMobile ? "100%" : undefined}
-            mb={isPortraitMobile ? 1 : 0}
-            zIndex={10}
-          >
-            <Typography variant="body2" sx={{ color: colors.primary[100], marginRight: 1, fontSize: isPortraitMobile ? "10px" : undefined }}>{showPercentageFCR ? `Showing Percentage` : `Showing Volume`}</Typography>
-            <Switch 
-              checked={showPercentageFCR} 
-              onChange={(e) => setShowPercentageFCR(e.target.checked)} 
-              color="primary"
-              size={isPortraitMobile ? "small" : "medium"}
-            />
-          </Box>
-          <Box
-            position={isPortraitMobile ? "relative" : "absolute"}
-            top={isPortraitMobile ? 0 : 10}
-            left={isPortraitMobile ? 0 : 10}
-            padding="10px" 
-            width={isPortraitMobile ? "100%" : undefined}
-          >
-            <Typography 
-              display="flex" 
-              variant={isPortraitMobile ? "h3" : "h2"}
-              fontWeight="600"
-            >
-              <RepeatOneRoundedIcon
-                sx={{ color: colors.greenAccent[300], fontSize: isPortraitMobile ? "22px" : "26px", marginRight: "8px" }} 
-              />
-              FCR 
-            </Typography>
-            
-            <Typography variant={isPortraitMobile ? "h6" : "h5"} sx={{ color: colors.greenAccent[300] }}>
-              The last 12 weeks
-            </Typography>
-          </Box>
-
-          <Box
-            sx={{ 
-              width: '100%', 
-              height: isPortraitMobile ? '250px' : '100%', 
-              marginTop: isPortraitMobile ? '60px' : '30%',
-              flexGrow: isPortraitMobile ? 1 : undefined
-            }}
-          >
-            <SimpleAreaChart 
-              key={`fcr-${vpName}-${bu_subset}-${productChosen}-${excludedItems.join(',')}`}
-              data={createSimpleAreaChartData(dataMatrix.filter(row => (isolatedMappedProducts.length > 0) ? isolatedMappedProducts.includes(row[1]) : true), bu_subset, productChosen, "FCR", showPercentageFCR, excludedItems)}
-              colorObject={{ "fill": colors.greenAccent[200], "stroke": colors.greenAccent[900] }}
-              percent={showPercentageFCR}
-            />
-          </Box>
-        </Box>
-
-        {/* Simple Area Chart for CSAT Coverage (Count) - Lower Level */}
-        <Box
-          gridColumn={isPortraitMobile ? "2" : `span ${TotalSubAreaChart}`}
           gridRow={isPortraitMobile ? "5" : `span ${TotalSubAreaChartVertical}`}
           backgroundColor={colors.primary[400]}
           display="flex"
@@ -931,12 +871,12 @@ const DashboardHistory = ({ bu_subset = "All", vpName = "All", productChosen = "
               fontWeight="600"
             >
               <AssessmentIcon
-                sx={{ color: colors.greenAccent[300], fontSize: isPortraitMobile ? "22px" : "26px", marginRight: "8px" }} 
+                sx={{ color: "hsl(45, 40%, 60%)", fontSize: isPortraitMobile ? "22px" : "26px", marginRight: "8px" }} 
               />
               CSAT Coverage 
             </Typography>
             
-            <Typography variant={isPortraitMobile ? "h6" : "h5"} sx={{ color: colors.greenAccent[300] }}>
+            <Typography variant={isPortraitMobile ? "h6" : "h5"} sx={{ color: "hsl(45, 40%, 60%)" }}>
               Tickets analyzed (last 12 weeks)
             </Typography>
           </Box>
@@ -952,8 +892,81 @@ const DashboardHistory = ({ bu_subset = "All", vpName = "All", productChosen = "
             <SimpleAreaChart 
               key={`csat-count-${vpName}-${bu_subset}-${productChosen}-${excludedItems.join(',')}`}
               data={createSimpleAreaChartData(dataMatrix.filter(row => (isolatedMappedProducts.length > 0) ? isolatedMappedProducts.includes(row[1]) : true), bu_subset, productChosen, "CSATCount", showPercentageCSATCount, excludedItems)}
-              colorObject={{ "fill": colors.greenAccent[200], "stroke": colors.greenAccent[900] }}
+              colorObject={{ "fill": "hsl(45, 40%, 70%)", "stroke": "hsl(45, 40%, 40%)" }}
               percent={showPercentageCSATCount}
+            />
+          </Box>
+        </Box>
+
+        {/* Simple Area Chart for FCR - Lower Level Right */}
+        <Box
+          gridColumn={isPortraitMobile ? "2" : `span ${TotalSubAreaChart}`}
+          gridRow={isPortraitMobile ? "5" : `span ${TotalSubAreaChartVertical}`}
+          backgroundColor={colors.primary[400]}
+          display="flex"
+          flexDirection={isPortraitMobile ? "column" : undefined}
+          alignItems="center"
+          justifyContent={isPortraitMobile ? "flex-start" : "center"}
+          position="relative" 
+          borderRadius={isPortraitMobile ? "12px" : undefined}
+          minHeight={isPortraitMobile ? "350px" : undefined}
+          padding={isPortraitMobile ? "10px" : undefined}
+        >
+          <Box 
+            position={isPortraitMobile ? "relative" : "absolute"} 
+            top={isPortraitMobile ? 0 : 10} 
+            right={isPortraitMobile ? 0 : 10} 
+            display="flex" 
+            alignItems="center"
+            justifyContent={isPortraitMobile ? "flex-end" : undefined}
+            width={isPortraitMobile ? "100%" : undefined}
+            mb={isPortraitMobile ? 1 : 0}
+            zIndex={10}
+          >
+            <Typography variant="body2" sx={{ color: colors.primary[100], marginRight: 1, fontSize: isPortraitMobile ? "10px" : undefined }}>{showPercentageFCR ? `Showing Percentage` : `Showing Volume`}</Typography>
+            <Switch 
+              checked={showPercentageFCR} 
+              onChange={(e) => setShowPercentageFCR(e.target.checked)} 
+              color="primary"
+              size={isPortraitMobile ? "small" : "medium"}
+            />
+          </Box>
+          <Box
+            position={isPortraitMobile ? "relative" : "absolute"}
+            top={isPortraitMobile ? 0 : 10}
+            left={isPortraitMobile ? 0 : 10}
+            padding="10px" 
+            width={isPortraitMobile ? "100%" : undefined}
+          >
+            <Typography 
+              display="flex" 
+              variant={isPortraitMobile ? "h3" : "h2"}
+              fontWeight="600"
+            >
+              <RepeatOneRoundedIcon
+                sx={{ color: "hsl(33, 45%, 55%)", fontSize: isPortraitMobile ? "22px" : "26px", marginRight: "8px" }} 
+              />
+              FCR 
+            </Typography>
+            
+            <Typography variant={isPortraitMobile ? "h6" : "h5"} sx={{ color: "hsl(33, 45%, 55%)" }}>
+              The last 12 weeks
+            </Typography>
+          </Box>
+
+          <Box
+            sx={{ 
+              width: '100%', 
+              height: isPortraitMobile ? '250px' : '100%', 
+              marginTop: isPortraitMobile ? '60px' : '30%',
+              flexGrow: isPortraitMobile ? 1 : undefined
+            }}
+          >
+            <SimpleAreaChart 
+              key={`fcr-${vpName}-${bu_subset}-${productChosen}-${excludedItems.join(',')}`}
+              data={createSimpleAreaChartData(dataMatrix.filter(row => (isolatedMappedProducts.length > 0) ? isolatedMappedProducts.includes(row[1]) : true), bu_subset, productChosen, "FCR", showPercentageFCR, excludedItems)}
+              colorObject={{ "fill": "hsl(33, 45%, 65%)", "stroke": "hsl(33, 45%, 35%)" }}
+              percent={showPercentageFCR}
             />
           </Box>
         </Box>

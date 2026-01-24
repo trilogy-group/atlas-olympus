@@ -3,7 +3,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { tokens } from "../theme";
 import { useTheme } from "@mui/material";
 
-const SimpleAreaChart = ({ data, colorObject, percent = false }) => {
+const SimpleAreaChart = ({ data, colorObject, percent = false, unit = "Tickets" }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
 
@@ -52,7 +52,7 @@ const SimpleAreaChart = ({ data, colorObject, percent = false }) => {
               fontSize: '20px', 
               fontWeight: 'bold',
             }}>
-            {currentValue} {!percent ? "Tickets" : "%"}
+            {currentValue} {!percent ? unit : "%"}
           </p>
           <p style={{
               marginTop: '5px', 
@@ -99,7 +99,8 @@ const SimpleAreaChart = ({ data, colorObject, percent = false }) => {
           stroke={colors.primary[100]}
         />
         <YAxis  
-          stroke={colors.primary[100]} 
+          stroke={colors.primary[100]}
+          domain={['auto', 'auto']}
         />
         <Tooltip content={renderColorfulTooltipContent} /> 
         <Area 
