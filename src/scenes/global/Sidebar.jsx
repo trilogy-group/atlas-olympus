@@ -90,6 +90,7 @@ const SidebarX = () => {
     const [isAdminExpanded, setAdminExpanded] = useState(false);
     const [isToolsExpanded, setToolsExpanded] = useState(false);
     const [isAutomationsExpanded, setAutomationsExpanded] = useState(false);
+    const [isEscalationsExpanded, setEscalationsExpanded] = useState(false);
 
     const [vicePresidents, setVicePresidents] = useState([]);
 
@@ -433,11 +434,37 @@ const SidebarX = () => {
                             </>
                             )}
 
+                        {/* 4. Escalations Menu */}
+                            <Box
+                            display="flex"
+                            alignItems="center"
+                            sx={{ cursor: "pointer", m: "15px 0 5px 20px" }}
+                            onClick={() => setEscalationsExpanded(!isEscalationsExpanded)}
+                            >
+                            {isEscalationsExpanded ? <KeyboardArrowDownIcon /> : <KeyboardArrowRightIcon />}
+                            <Typography variant="h6" color={colors.blueAccent[300]} ml="3px">
+                                {isCollapsed ? "4.-" : "4. Escalations"}
+                            </Typography>
+                            </Box>
+                            {isEscalationsExpanded && (
+                            <>
+                                <Item
+                                title="All Escalations"
+                                to="/escalations"
+                                icon={<HomeOutlinedIcon />}
+                                selected={selected}
+                                setSelected={setSelected}
+                                section="Escalations"
+                                onMobileClick={handleMobileMenuClick}
+                                />
+                            </>
+                            )}
+
                         {/*------------------ DYNAMIC RENDERED -----------------*/}
                         {/*------------------ DYNAMIC RENDERED -----------------*/}
                         {/*------------------ DYNAMIC RENDERED -----------------*/}
 
-                        {/* 4. Tools Menu */}
+                        {/* 5. Tools Menu */}
                             <Box
                                 display="flex"
                                 alignItems="center"
@@ -446,7 +473,7 @@ const SidebarX = () => {
                             >
                                 {isToolsExpanded ? <KeyboardArrowDownIcon /> : <KeyboardArrowRightIcon />}
                                 <Typography variant="h6" color={colors.blueAccent[300]} ml="3px">
-                                    {isCollapsed ? "4.-" : "4. Tools"}
+                                    {isCollapsed ? "5.-" : "5. Tools"}
                                 </Typography>
                             </Box>
                             {isToolsExpanded && (

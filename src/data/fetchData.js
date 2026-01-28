@@ -526,6 +526,14 @@ export const performGetHistory = async (globals) => {
     }
 };
 
+export const performGetEscalations = async (globals) => {
+    // Placeholder for now - will fetch from S3 later
+    // For now, return empty array to make the page load
+    console.log('[performGetEscalations] Placeholder - returning empty data');
+    localStorage.setItem('escalations-history-data', JSON.stringify([]));
+    return [];
+};
+
 export const performGetAutomations = async (globals) => {
     const BUCKET_NAME = `olympus-cache`;
     const SHEET_ID = "1qkmQ2HJKXsLHkz52_XksERTXvHBY2dVqe7BdHD7dsso";

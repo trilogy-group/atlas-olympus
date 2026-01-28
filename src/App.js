@@ -9,6 +9,7 @@ import Login from "./scenes/login";
 import DashboardPassive from "./scenes/dashboardpassive";
 import DashboardHistory from "./scenes/dashboardhistory";
 import DashboardAutomations from "./scenes/dashboardautomations";
+import DashboardEscalations from "./scenes/dashboardescalations";
 import DataMatrix from "./scenes/datamatrix";
 import CreateUserForm from "./scenes/createuser";
 import AssignProducts from "./scenes/assignproducts";
