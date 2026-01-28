@@ -546,9 +546,9 @@ const SidebarX = () => {
                                         sx={{ cursor: "pointer", m: "15px 0 5px 20px" }}
                                         onClick={() => setAdminExpanded(!isAdminExpanded)}
                                     >
-                                        {isAdminExpanded ? <KeyboardArrowDownIcon /> : <KeyboardArrowRightIcon />}
-                                        <Typography variant="h6" color={colors.blueAccent[300]} ml="3px">
-                                            {isCollapsed ? "5.-" : "5. Admin"}
+                                {isAdminExpanded ? <KeyboardArrowDownIcon /> : <KeyboardArrowRightIcon />}
+                                <Typography variant="h6" color={colors.blueAccent[300]} ml="3px">
+                                    {isCollapsed ? "6.-" : "6. Admin"}
                                         </Typography>
                                     </Box>
                                     {isAdminExpanded && (
