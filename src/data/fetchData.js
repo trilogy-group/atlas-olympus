@@ -551,34 +551,71 @@ export const performGetEscalations = async (globals) => {
         
         const escalations = await resp.json();
         
-        // Transform flat array to format expected by dashboard
-        // Group by product and extract unique weeks
-        const productBuMap = new Map();
-        const weeksSet = new Set();
+        // Helper function for week calculation
+        const getWeekNumber = (date) => {
+            const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+            const dayNum = d.getUTCDay() || 7;
+            d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+            const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+            return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+        };
+        
+        // Group by BU, product, and week
+        const weekMap = new Map();
         
         escalations.forEach(ticket => {
-            if (!ticket.product || !ticket.bu) return;
+            if (!ticket.escalation_date || !ticket.product || !ticket.bu) return;
             
-            const key = `${ticket.bu}|${ticket.product}`;
-            if (!productBuMap.has(key)) {
-                productBuMap.set(key, {
+            // Calculate week from escalation_date
+            const date = new Date(ticket.escalation_date);
+            const year = date.getUTCFullYear();
+            const week = getWeekNumber(date);
+            const weekKey = `${year}-${String(week).padStart(2, '0')}`;
+            
+            const groupKey = `${ticket.bu}|${ticket.product}|${weekKey}`;
+            
+            if (!weekMap.has(groupKey)) {
+                weekMap.set(groupKey, {
                     bu: ticket.bu,
                     product: ticket.product,
-                    tickets: []
+                    total_escalations: 0,
+                    bu_escalations: 0,
+                    customer_escalations: 0,
+                    week: weekKey
                 });
             }
-            productBuMap.get(key).tickets.push(ticket);
+            
+            const group = weekMap.get(groupKey);
+            group.total_escalations++;
+            
+            if (ticket.escalation_type === 'Customer') {
+                group.customer_escalations++;
+            } else {
+                group.bu_escalations++;
+            }
         });
         
-        // Store full data for the dashboard
-        localStorage.setItem(storageKey, JSON.stringify(escalations));
+        // Convert to table format (like AutomationsHistory)
+        const data = [
+            ["bu", "product", "total_escalations", "bu_escalations", "customer_escalations", "week"],
+            ...Array.from(weekMap.values()).map(row => [
+                row.bu,
+                row.product,
+                String(row.total_escalations),
+                String(row.bu_escalations),
+                String(row.customer_escalations),
+                row.week
+            ])
+        ];
         
         // Store bu-product list
-        const buProductList = Array.from(productBuMap.values()).map(item => [item.bu, item.product]);
-        localStorage.setItem("bu-product-escalations", JSON.stringify(buProductList));
+        const buProductList = Array.from(weekMap.values()).map(item => [item.bu, item.product]);
+        const uniqueProducts = [...new Map(buProductList.map(item => [JSON.stringify(item), item])).values()];
+        localStorage.setItem("bu-product-escalations", JSON.stringify(uniqueProducts));
         
-        console.log(`[performGetEscalations] Loaded ${escalations.length} escalations, ${buProductList.length} products`);
-        return escalations;
+        localStorage.setItem(storageKey, JSON.stringify(data));
+        console.log(`[performGetEscalations] Loaded ${escalations.length} tickets, grouped into ${data.length - 1} rows`);
+        return data;
 
     } catch (error) {
         console.error('Error fetching performGetEscalations:', error);
