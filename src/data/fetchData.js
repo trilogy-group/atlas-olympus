@@ -527,11 +527,63 @@ export const performGetHistory = async (globals) => {
 };
 
 export const performGetEscalations = async (globals) => {
-    // Placeholder for now - will fetch from S3 later
-    // For now, return empty array to make the page load
-    console.log('[performGetEscalations] Placeholder - returning empty data');
-    localStorage.setItem('escalations-history-data', JSON.stringify([]));
-    return [];
+    const BUCKET_NAME = `olympus-cache`;
+    const SHEET_ID = "1qkmQ2HJKXsLHkz52_XksERTXvHBY2dVqe7BdHD7dsso";
+    const storageKey = `escalations-history-data`;
+
+    try {
+        const cachedData = localStorage.getItem(storageKey);
+        if (cachedData) {
+            console.log(`[performGetEscalations] Cached data found for ${storageKey}`);
+            const data = JSON.parse(cachedData);
+            return data;
+        }
+
+        console.log(`[performGetEscalations] Fetching data from S3`);
+        const bucketUrl = `https://${BUCKET_NAME}.s3.amazonaws.com`;
+        const prefix = SHEET_ID;
+        const escalationsUrl = `${bucketUrl}/${prefix}/EscalationsHistory.json`;
+
+        const resp = await fetch(escalationsUrl, { cache: 'no-store' });
+        if (!resp.ok) {
+            throw new Error(`Could not fetch EscalationsHistory.json: ${resp.status}`);
+        }
+        
+        const escalations = await resp.json();
+        
+        // Transform flat array to format expected by dashboard
+        // Group by product and extract unique weeks
+        const productBuMap = new Map();
+        const weeksSet = new Set();
+        
+        escalations.forEach(ticket => {
+            if (!ticket.product || !ticket.bu) return;
+            
+            const key = `${ticket.bu}|${ticket.product}`;
+            if (!productBuMap.has(key)) {
+                productBuMap.set(key, {
+                    bu: ticket.bu,
+                    product: ticket.product,
+                    tickets: []
+                });
+            }
+            productBuMap.get(key).tickets.push(ticket);
+        });
+        
+        // Store full data for the dashboard
+        localStorage.setItem(storageKey, JSON.stringify(escalations));
+        
+        // Store bu-product list
+        const buProductList = Array.from(productBuMap.values()).map(item => [item.bu, item.product]);
+        localStorage.setItem("bu-product-escalations", JSON.stringify(buProductList));
+        
+        console.log(`[performGetEscalations] Loaded ${escalations.length} escalations, ${buProductList.length} products`);
+        return escalations;
+
+    } catch (error) {
+        console.error('Error fetching performGetEscalations:', error);
+        return null;
+    }
 };
 
 export const performGetAutomations = async (globals) => {
